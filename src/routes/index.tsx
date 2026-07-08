@@ -295,7 +295,7 @@ function Activities() {
         )}
 
         <div className="mt-8 grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
-          {visibleActivities.map((a) => (
+          {visibleActivities.map((a, i) => (
             <article
               key={a.id}
               className="card-lift group relative flex flex-col overflow-hidden rounded-2xl border border-border bg-white p-7"
@@ -313,7 +313,7 @@ function Activities() {
                   {a.category}
                 </span>
                 <span className="font-mono text-xs font-semibold tabular-nums text-muted-foreground">
-                  N.º {a.id}
+                  N.º {String(i + 1).padStart(2, '0')}
                 </span>
               </div>
 
