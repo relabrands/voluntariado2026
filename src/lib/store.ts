@@ -1,4 +1,17 @@
 import { useSyncExternalStore } from 'react';
+import { db, auth } from './firebase';
+import { 
+  collection, 
+  onSnapshot, 
+  addDoc, 
+  deleteDoc, 
+  doc, 
+  updateDoc,
+  serverTimestamp,
+  query,
+  orderBy
+} from 'firebase/firestore';
+import { signInWithEmailAndPassword, signOut, onAuthStateChanged, User } from 'firebase/auth';
 
 // --- Types ---
 export type Activity = {
@@ -13,6 +26,7 @@ export type Activity = {
   spots: number;
   link: string;
   rawDate?: string;
+  createdAt?: any;
 };
 
 export type BlogPost = {
@@ -22,63 +36,36 @@ export type BlogPost = {
   content: string;
   date: string;
   imageUrl: string;
+  createdAt?: any;
 };
 
-// --- Initial Data ---
-const initialActivities: Activity[] = [
-  {
-    id: "01",
-    category: "Medio Ambiente",
-    categoryColor: "var(--magenta)",
-    title: "Reforestación en el Parque Nacional Los Haitises",
-    description: "Jornada de siembra de 500 árboles nativos junto a guardaparques y biólogos locales.",
-    date: "Sáb 14 Mar · 7:00 AM",
-    location: "Sabana de la Mar",
-    ong: "Fundación Verde Vivo",
-    spots: 24,
-    link: "#",
-  },
-  {
-    id: "02",
-    category: "Educación",
-    categoryColor: "var(--brand)",
-    title: "Tutorías de lectura para niñas y niños",
-    description: "Acompaña a estudiantes de 3ro a 6to grado en sesiones semanales de lectura guiada.",
-    date: "Dom 22 Mar · 9:00 AM",
-    location: "Villa Duarte, SDE",
-    ong: "Enseña por RD",
-    spots: 12,
-    link: "#",
-  },
-  {
-    id: "03",
-    category: "Ayuda Social",
-    categoryColor: "var(--navy)",
-    title: "Distribución de alimentos a familias vulnerables",
-    description: "Empaque y reparto de 300 raciones en comunidades priorizadas por Gabinete de Familia.",
-    date: "Sáb 28 Mar · 4:00 PM",
-    location: "Los Mameyes, SDE",
-    ong: "Red Solidaria Caribe",
-    spots: 40,
-    link: "#",
-  },
-];
+export type CalendarEvent = {
+  id: string;
+  month: string;
+  day: string;
+  title: string;
+  desc: string;
+  color: string;
+  createdAt?: any;
+};
 
-const initialPosts: BlogPost[] = [
-  {
-    id: "1",
-    title: "Lanzamiento oficial del IVY 2026",
-    summary: "Se anuncian las primeras metas de la campaña y los compromisos del gobierno para este año del voluntariado.",
-    content: "Texto completo de la noticia...",
-    date: "10 Feb 2026",
-    imageUrl: "https://images.unsplash.com/photo-1593113565694-c701438068d1?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-  },
-];
+export type Resource = {
+  id: string;
+  title: string;
+  desc: string;
+  link: string;
+  color: string;
+  createdAt?: any;
+};
 
 // --- Store Implementation ---
 type StoreState = {
+  user: User | null;
+  authInitialized: boolean;
   activities: Activity[];
   posts: BlogPost[];
+  events: CalendarEvent[];
+  resources: Resource[];
 };
 
 class Store {
@@ -86,13 +73,57 @@ class Store {
   private listeners: Set<() => void> = new Set();
 
   constructor() {
-    const savedActivities = localStorage.getItem('ivy_activities');
-    const savedPosts = localStorage.getItem('ivy_posts');
-
     this.state = {
-      activities: savedActivities ? JSON.parse(savedActivities) : initialActivities,
-      posts: savedPosts ? JSON.parse(savedPosts) : initialPosts,
+      user: null,
+      authInitialized: false,
+      activities: [],
+      posts: [],
+      events: [],
+      resources: [],
     };
+
+    // Listen to Auth State
+    onAuthStateChanged(auth, (user) => {
+      this.state = { ...this.state, user, authInitialized: true };
+      this.notify();
+    });
+
+    // Listen to Firestore Collections
+    const activitiesQ = query(collection(db, 'activities'), orderBy('createdAt', 'desc'));
+    onSnapshot(activitiesQ, (snap) => {
+      this.state = {
+        ...this.state,
+        activities: snap.docs.map(d => ({ id: d.id, ...d.data() } as Activity))
+      };
+      this.notify();
+    }, () => {}); // ignore permission errors if rules are strict
+
+    const postsQ = query(collection(db, 'posts'), orderBy('createdAt', 'desc'));
+    onSnapshot(postsQ, (snap) => {
+      this.state = {
+        ...this.state,
+        posts: snap.docs.map(d => ({ id: d.id, ...d.data() } as BlogPost))
+      };
+      this.notify();
+    }, () => {});
+
+    const eventsQ = query(collection(db, 'events'), orderBy('createdAt', 'asc'));
+    onSnapshot(eventsQ, (snap) => {
+      this.state = {
+        ...this.state,
+        events: snap.docs.map(d => ({ id: d.id, ...d.data() } as CalendarEvent))
+      };
+      this.notify();
+    }, () => {});
+
+    const resourcesQ = query(collection(db, 'resources'), orderBy('createdAt', 'desc'));
+    onSnapshot(resourcesQ, (snap) => {
+      this.state = {
+        ...this.state,
+        resources: snap.docs.map(d => ({ id: d.id, ...d.data() } as Resource))
+      };
+      this.notify();
+    }, () => {});
   }
 
   getState = () => this.state;
@@ -106,11 +137,12 @@ class Store {
     this.listeners.forEach((l) => l());
   }
 
-  addActivity = (activity: Omit<Activity, 'id' | 'categoryColor'>) => {
-    // Generate a simple ID
-    const newId = String(this.state.activities.length + 1).padStart(2, '0');
-    
-    // Assign a color based on category
+  // --- Auth ---
+  login = (email: string, pass: string) => signInWithEmailAndPassword(auth, email, pass);
+  logout = () => signOut(auth);
+
+  // --- Activities ---
+  addActivity = async (activity: Omit<Activity, 'id' | 'categoryColor'>) => {
     let color = "var(--brand)";
     if (activity.category.toLowerCase().includes("ambiente")) color = "var(--magenta)";
     if (activity.category.toLowerCase().includes("social")) color = "var(--navy)";
@@ -121,47 +153,44 @@ class Store {
         const d = new Date(activity.date);
         const dateStr = d.toLocaleDateString('es-DO', { weekday: 'short', day: 'numeric', month: 'short' });
         const timeStr = d.toLocaleTimeString('es-DO', { hour: 'numeric', minute: '2-digit', hour12: true });
-        // Capitalize first letter of weekday
         const cleanDateStr = dateStr.charAt(0).toUpperCase() + dateStr.slice(1).replace('.', '');
         formattedDate = `${cleanDateStr} · ${timeStr}`;
       }
-    } catch (e) {
-      // ignore and use raw
-    }
+    } catch (e) {}
 
-    const newActivity: Activity = { ...activity, id: newId, categoryColor: color, date: formattedDate, rawDate: activity.date };
-    
-    this.state = {
-      ...this.state,
-      activities: [newActivity, ...this.state.activities],
-    };
-    
-    localStorage.setItem('ivy_activities', JSON.stringify(this.state.activities));
-    this.notify();
+    await addDoc(collection(db, 'activities'), {
+      ...activity,
+      categoryColor: color,
+      date: formattedDate,
+      rawDate: activity.date,
+      createdAt: serverTimestamp()
+    });
   };
 
-  addPost = (post: Omit<BlogPost, 'id' | 'date'>) => {
-    const newPost: BlogPost = {
+  deleteActivity = (id: string) => deleteDoc(doc(db, 'activities', id));
+
+  // --- Posts ---
+  addPost = async (post: Omit<BlogPost, 'id' | 'date'>) => {
+    await addDoc(collection(db, 'posts'), {
       ...post,
-      id: Date.now().toString(),
       date: new Date().toLocaleDateString('es-DO', { day: 'numeric', month: 'short', year: 'numeric' }),
-    };
-    this.state = {
-      ...this.state,
-      posts: [newPost, ...this.state.posts],
-    };
-    localStorage.setItem('ivy_posts', JSON.stringify(this.state.posts));
-    this.notify();
+      createdAt: serverTimestamp()
+    });
   };
 
-  deletePost = (id: string) => {
-    this.state = {
-      ...this.state,
-      posts: this.state.posts.filter(p => p.id !== id),
-    };
-    localStorage.setItem('ivy_posts', JSON.stringify(this.state.posts));
-    this.notify();
+  deletePost = (id: string) => deleteDoc(doc(db, 'posts', id));
+
+  // --- Events ---
+  addEvent = async (event: Omit<CalendarEvent, 'id'>) => {
+    await addDoc(collection(db, 'events'), { ...event, createdAt: serverTimestamp() });
   };
+  deleteEvent = (id: string) => deleteDoc(doc(db, 'events', id));
+
+  // --- Resources ---
+  addResource = async (resource: Omit<Resource, 'id'>) => {
+    await addDoc(collection(db, 'resources'), { ...resource, createdAt: serverTimestamp() });
+  };
+  deleteResource = (id: string) => deleteDoc(doc(db, 'resources', id));
 }
 
 export const store = new Store();
@@ -169,15 +198,26 @@ export const store = new Store();
 // --- Hooks ---
 export function useActivities() {
   const activities = useSyncExternalStore(store.subscribe, () => store.getState().activities);
-  
   return activities.filter(a => {
-    if (!a.rawDate) return true; // keep mock data without rawDate
+    if (!a.rawDate) return true;
     const activityTime = new Date(a.rawDate).getTime();
     return activityTime >= Date.now();
   });
 }
 
 export function usePosts() {
+  return useSyncExternalStore(store.subscribe, () => store.getState().posts);
+}
+
+export function useEvents() {
+  return useSyncExternalStore(store.subscribe, () => store.getState().events);
+}
+
+export function useResources() {
+  return useSyncExternalStore(store.subscribe, () => store.getState().resources);
+}
+
+export function useAuth() {
   const state = useSyncExternalStore(store.subscribe, store.getState);
-  return state.posts;
+  return { user: state.user, initialized: state.authInitialized };
 }

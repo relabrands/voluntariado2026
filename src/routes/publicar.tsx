@@ -1,6 +1,7 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { useForm } from 'react-hook-form';
-import { ArrowLeft } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { ArrowLeft, ShieldAlert } from 'lucide-react';
 import { store } from '../lib/store';
 
 export const Route = createFileRoute('/publicar')({
@@ -21,10 +22,42 @@ type FormValues = {
 function PublicarComponent() {
   const navigate = useNavigate();
   const { register, handleSubmit, formState: { errors } } = useForm<FormValues>();
+  const [loading, setLoading] = useState(false);
 
-  const onSubmit = (data: FormValues) => {
-    store.addActivity(data);
-    navigate({ to: '/' });
+  // Captcha State
+  const [num1, setNum1] = useState(0);
+  const [num2, setNum2] = useState(0);
+  const [captchaAnswer, setCaptchaAnswer] = useState('');
+  const [captchaError, setCaptchaError] = useState(false);
+
+  useEffect(() => {
+    generateCaptcha();
+  }, []);
+
+  const generateCaptcha = () => {
+    setNum1(Math.floor(Math.random() * 10) + 1);
+    setNum2(Math.floor(Math.random() * 10) + 1);
+    setCaptchaAnswer('');
+    setCaptchaError(false);
+  };
+
+  const onSubmit = async (data: FormValues) => {
+    if (parseInt(captchaAnswer) !== num1 + num2) {
+      setCaptchaError(true);
+      generateCaptcha();
+      return;
+    }
+
+    setLoading(true);
+    try {
+      await store.addActivity(data);
+      navigate({ to: '/' });
+    } catch (e) {
+      console.error(e);
+      alert('Hubo un error al publicar la actividad. Intenta de nuevo.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -136,17 +169,42 @@ function PublicarComponent() {
                   placeholder="https://wa.me/..."
                 />
                 <p className="text-xs text-muted-foreground mt-1">
-                  Los voluntarios serán redirigidos a este enlace al hacer clic en "Aplicar".
+                  Los voluntarios serán redirigidos a este enlace al hacer clic en "Participar".
                 </p>
               </div>
             </div>
 
+            {/* Captcha Section */}
+            <div className="mt-8 p-6 rounded-2xl border border-border bg-secondary/20 flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <div className="h-10 w-10 shrink-0 flex items-center justify-center rounded-full bg-background border border-border text-foreground">
+                  <ShieldAlert className="h-5 w-5" />
+                </div>
+                <div>
+                  <p className="text-sm font-bold text-foreground">Verificación de Seguridad</p>
+                  <p className="text-xs text-muted-foreground">Para evitar spam, resuelve esta suma:</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <span className="text-lg font-black">{num1} + {num2} =</span>
+                <input 
+                  type="number" 
+                  value={captchaAnswer}
+                  onChange={(e) => setCaptchaAnswer(e.target.value)}
+                  className={`w-20 rounded-xl border ${captchaError ? 'border-destructive bg-destructive/10' : 'border-border bg-background'} px-4 py-2 text-center font-bold outline-none`}
+                  required
+                />
+              </div>
+            </div>
+            {captchaError && <p className="text-center text-sm font-bold text-destructive">Respuesta incorrecta. Intenta con la nueva suma.</p>}
+
             <button 
               type="submit"
-              className="mt-8 w-full rounded-xl py-4 text-sm font-bold text-white transition-opacity hover:opacity-90"
+              disabled={loading}
+              className="mt-8 w-full rounded-xl py-4 text-sm font-bold text-white transition-opacity hover:opacity-90 disabled:opacity-50"
               style={{ background: "var(--brand)" }}
             >
-              Publicar Oportunidad
+              {loading ? "Publicando..." : "Publicar Oportunidad"}
             </button>
           </form>
         </div>

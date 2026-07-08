@@ -13,7 +13,7 @@ import {
   Download,
   X,
 } from "lucide-react";
-import { useActivities, usePosts, type BlogPost } from "../lib/store";
+import { useActivities, usePosts, useEvents, useResources, type BlogPost } from "../lib/store";
 
 export const Route = createFileRoute("/")({
   component: Landing,
@@ -667,29 +667,7 @@ function Footer() {
 /* -------------------------------------------------------------- */
 
 function CalendarSection() {
-  const events = [
-    {
-      month: "Mar",
-      day: "14",
-      title: "Día de Reforestación Nacional",
-      desc: "Únete a la gran jornada de siembra simultánea en 5 parques nacionales.",
-      color: "var(--magenta)"
-    },
-    {
-      month: "Abr",
-      day: "05",
-      title: "Foro de Voluntariado Juvenil",
-      desc: "Charlas, talleres y networking para jóvenes líderes.",
-      color: "var(--brand)"
-    },
-    {
-      month: "Jun",
-      day: "21",
-      title: "Limpieza de Costas",
-      desc: "Intervención en más de 20 playas a nivel nacional.",
-      color: "var(--navy)"
-    }
-  ];
+  const events = useEvents();
 
   return (
     <section id="calendar" className="bg-background py-24 border-t border-border/50">
@@ -735,26 +713,7 @@ function CalendarSection() {
 /* -------------------------------------------------------------- */
 
 function Resources() {
-  const resources = [
-    {
-      title: "Guía de Voluntariado",
-      desc: "Manual completo para la integración de voluntarios.",
-      link: "#",
-      color: "var(--brand)"
-    },
-    {
-      title: "Kit de Marca IVY 2026",
-      desc: "Logos, colores y plantillas para tus redes sociales.",
-      link: "#",
-      color: "var(--magenta)"
-    },
-    {
-      title: "Formato de Planificación",
-      desc: "Plantilla Excel para el diseño de tus actividades.",
-      link: "#",
-      color: "var(--navy)"
-    }
-  ];
+  const resources = useResources();
 
   return (
     <section id="resources" className="bg-secondary/20 py-24">
