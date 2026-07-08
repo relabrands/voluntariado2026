@@ -51,10 +51,11 @@ function PublicarComponent() {
     setLoading(true);
     try {
       await store.addActivity(data);
+      alert('¡Tu oportunidad de voluntariado ha sido publicada con éxito!');
       navigate({ to: '/' });
-    } catch (e) {
+    } catch (e: any) {
       console.error(e);
-      alert('Hubo un error al publicar la actividad. Intenta de nuevo.');
+      alert('Hubo un error al publicar la actividad: ' + (e.message || 'Intenta de nuevo.'));
     } finally {
       setLoading(false);
     }
