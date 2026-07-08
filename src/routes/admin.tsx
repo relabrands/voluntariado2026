@@ -10,8 +10,8 @@ export const Route = createFileRoute('/admin')({
 
 type Tab = 'resumen' | 'blog' | 'agenda' | 'recursos' | 'actividades';
 
-const inputClass = "w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-foreground outline-none transition-all focus:border-white/30 focus:bg-white/10 placeholder:text-muted-foreground";
-const labelClass = "block text-xs font-bold text-muted-foreground mb-1.5 uppercase tracking-wider";
+const inputClass = "w-full rounded-xl border border-white/15 bg-white/10 px-4 py-3 text-sm text-white outline-none transition-all focus:border-white/40 focus:bg-white/15 placeholder:text-white/35";
+const labelClass = "block text-[11px] font-bold text-white/55 mb-1.5 uppercase tracking-wider";
 
 function NavItem({ label, icon, active, onClick }: { label: string; icon: React.ReactNode; active: boolean; onClick: () => void }) {
   return (
@@ -20,10 +20,10 @@ function NavItem({ label, icon, active, onClick }: { label: string; icon: React.
       className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all ${
         active
           ? 'bg-white/15 text-white shadow-sm'
-          : 'text-white/50 hover:bg-white/10 hover:text-white'
+          : 'text-white/55 hover:bg-white/10 hover:text-white'
       }`}
     >
-      <span className={`${active ? 'text-white' : 'text-white/40'}`}>{icon}</span>
+      <span className={`${active ? 'text-white' : 'text-white/45'}`}>{icon}</span>
       {label}
       {active && <span className="ml-auto w-1.5 h-1.5 rounded-full bg-[var(--magenta)]" />}
     </button>
@@ -74,13 +74,13 @@ function AdminDashboard() {
 
         {/* Nav */}
         <nav className="flex-1 space-y-1">
-          <div className="text-[10px] font-bold uppercase tracking-widest text-white/25 px-4 mb-3">Principal</div>
+          <div className="text-[10px] font-bold uppercase tracking-widest text-white/40 px-4 mb-3">Principal</div>
           <NavItem label="Resumen" icon={<LayoutDashboard className="w-4 h-4" />} active={activeTab === 'resumen'} onClick={() => setActiveTab('resumen')} />
-          <div className="text-[10px] font-bold uppercase tracking-widest text-white/25 px-4 mt-6 mb-3">Contenido</div>
+          <div className="text-[10px] font-bold uppercase tracking-widest text-white/40 px-4 mt-6 mb-3">Contenido</div>
           <NavItem label="Blog & Noticias" icon={<FileText className="w-4 h-4" />} active={activeTab === 'blog'} onClick={() => setActiveTab('blog')} />
           <NavItem label="Agenda 2026" icon={<Calendar className="w-4 h-4" />} active={activeTab === 'agenda'} onClick={() => setActiveTab('agenda')} />
           <NavItem label="Recursos" icon={<DownloadCloud className="w-4 h-4" />} active={activeTab === 'recursos'} onClick={() => setActiveTab('recursos')} />
-          <div className="text-[10px] font-bold uppercase tracking-widest text-white/25 px-4 mt-6 mb-3">ONGs</div>
+          <div className="text-[10px] font-bold uppercase tracking-widest text-white/40 px-4 mt-6 mb-3">ONGs</div>
           <NavItem label="Actividades" icon={<Activity className="w-4 h-4" />} active={activeTab === 'actividades'} onClick={() => setActiveTab('actividades')} />
         </nav>
 
