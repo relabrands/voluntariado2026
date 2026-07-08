@@ -1,0 +1,120 @@
+@import "tailwindcss" source(none);
+@source "../src";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --font-sans: "Montserrat", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Montserrat", ui-sans-serif, system-ui, sans-serif;
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+  --radius-3xl: calc(var(--radius) + 12px);
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --color-brand: var(--brand);
+  --color-brand-foreground: var(--brand-foreground);
+  --color-magenta: var(--magenta);
+  --color-magenta-foreground: var(--magenta-foreground);
+  --color-navy: var(--navy);
+  --color-navy-foreground: var(--navy-foreground);
+  --color-sky: var(--sky);
+}
+
+:root {
+  --radius: 0.75rem;
+
+  /* Brand palette */
+  --brand: oklch(0.612 0.153 240);           /* ~#007FC2 */
+  --brand-foreground: oklch(1 0 0);
+  --magenta: oklch(0.545 0.235 350);         /* ~#D40D80 */
+  --magenta-foreground: oklch(1 0 0);
+  --navy: oklch(0.343 0.121 253);            /* ~#003A76 */
+  --navy-foreground: oklch(1 0 0);
+  --sky: oklch(0.878 0.075 232);             /* ~#8FD5FB */
+
+  --background: oklch(0.985 0.003 240);      /* off-white #F8FAFC */
+  --foreground: oklch(0.19 0.03 253);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.19 0.03 253);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.19 0.03 253);
+  --primary: var(--brand);
+  --primary-foreground: oklch(1 0 0);
+  --secondary: oklch(0.96 0.01 240);
+  --secondary-foreground: oklch(0.25 0.04 253);
+  --muted: oklch(0.96 0.01 240);
+  --muted-foreground: oklch(0.5 0.02 253);
+  --accent: oklch(0.94 0.03 232);
+  --accent-foreground: oklch(0.25 0.04 253);
+  --destructive: oklch(0.577 0.245 27.325);
+  --destructive-foreground: oklch(1 0 0);
+  --border: oklch(0.92 0.01 240);
+  --input: oklch(0.92 0.01 240);
+  --ring: var(--brand);
+}
+
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    font-feature-settings: "ss01", "cv11";
+  }
+  h1, h2, h3, h4 {
+    font-family: var(--font-display);
+    letter-spacing: -0.02em;
+  }
+}
+
+@utility hero-grid-bg {
+  background-image:
+    radial-gradient(circle at 20% 10%, color-mix(in oklab, var(--sky) 55%, transparent) 0, transparent 45%),
+    radial-gradient(circle at 85% 30%, color-mix(in oklab, var(--brand) 22%, transparent) 0, transparent 50%),
+    linear-gradient(to bottom, var(--background), var(--background));
+}
+
+@utility grid-pattern {
+  background-image:
+    linear-gradient(to right, color-mix(in oklab, var(--brand) 8%, transparent) 1px, transparent 1px),
+    linear-gradient(to bottom, color-mix(in oklab, var(--brand) 8%, transparent) 1px, transparent 1px);
+  background-size: 44px 44px;
+}
+
+@utility card-lift {
+  transition: transform 300ms cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 300ms;
+  &:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 20px 40px -20px color-mix(in oklab, var(--navy) 30%, transparent);
+  }
+}
