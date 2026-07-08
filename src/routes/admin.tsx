@@ -351,6 +351,7 @@ function AgendaTab() {
     setValue('title', e.title);
     setValue('desc', e.desc);
     setValue('color', e.color);
+    setValue('location', e.location || '');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -385,6 +386,9 @@ function AgendaTab() {
             <FormInput label="Descripción">
               <textarea {...register('desc', { required: true })} rows={2} className={inputClass} placeholder="Detalles del evento..." />
             </FormInput>
+            <FormInput label="Lugar / Ubicación">
+              <input {...register('location')} className={inputClass} placeholder="Ej. Parque Nacional Los Haitises" />
+            </FormInput>
             <FormInput label="Color de Etiqueta">
               <select {...register('color', { required: true })} className={inputClass}>
                 <option value="var(--brand)">Azul Brand</option>
@@ -412,6 +416,9 @@ function AgendaTab() {
                 <div className="flex-1 min-w-0">
                   <h3 className="font-bold text-foreground">{e.title}</h3>
                   <p className="text-xs text-muted-foreground line-clamp-2 mt-0.5">{e.desc}</p>
+                  {e.location && (
+                    <p className="text-xs font-semibold text-[var(--brand)] mt-1">📍 {e.location}</p>
+                  )}
                   <ActionBtns onEdit={() => handleEdit(e)} onDelete={() => { if (confirm('¿Eliminar este evento?')) store.deleteEvent(e.id); }} />
                 </div>
               </div>

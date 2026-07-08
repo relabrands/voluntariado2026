@@ -95,13 +95,13 @@ function Hero() {
       />
 
       <div className="relative mx-auto max-w-6xl px-6 pt-24 pb-20 lg:pt-32 lg:pb-28">
-        <div className="flex items-center gap-3 text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground">
-          <span className="h-px w-8 bg-foreground/30" />
-          Año Internacional del Voluntariado
-          <span className="text-[var(--magenta)]">· 2026</span>
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+          <span className="h-px w-8 bg-foreground/30 hidden sm:block" />
+          <span className="whitespace-nowrap">Año Internacional del Voluntariado</span>
+          <span className="text-[var(--magenta)] whitespace-nowrap">· 2026</span>
         </div>
 
-        <h1 className="mt-8 max-w-5xl text-5xl font-black leading-[0.95] tracking-[-0.03em] text-foreground sm:text-6xl lg:text-[92px]">
+        <h1 className="mt-8 max-w-5xl text-5xl font-black leading-[0.95] tracking-[-0.03em] text-foreground sm:text-6xl lg:text-[72px]">
           <span style={{ color: "var(--magenta)" }}>Voluntarios</span>{" "}
           <span style={{ color: "var(--brand)" }}>construyendo</span>{" "}
           <span className="italic font-serif" style={{ fontFamily: "'Georgia', serif", color: "var(--magenta)" }}>
@@ -693,6 +693,11 @@ function CalendarSection() {
               </div>
               <div className="p-6 text-muted-foreground text-sm flex-1">
                 {ev.desc}
+                {ev.location && (
+                  <p className="mt-3 text-xs font-bold flex items-center gap-1" style={{ color: ev.color }}>
+                    📍 {ev.location}
+                  </p>
+                )}
               </div>
             </div>
           ))}

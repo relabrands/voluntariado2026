@@ -46,6 +46,7 @@ export type CalendarEvent = {
   title: string;
   desc: string;
   color: string;
+  location?: string;
   createdAt?: any;
 };
 
