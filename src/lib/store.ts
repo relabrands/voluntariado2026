@@ -168,6 +168,7 @@ class Store {
   };
 
   deleteActivity = (id: string) => deleteDoc(doc(db, 'activities', id));
+  updateActivity = (id: string, data: Partial<Omit<Activity, 'id'>>) => updateDoc(doc(db, 'activities', id), data);
 
   // --- Posts ---
   addPost = async (post: Omit<BlogPost, 'id' | 'date'>) => {
@@ -179,18 +180,21 @@ class Store {
   };
 
   deletePost = (id: string) => deleteDoc(doc(db, 'posts', id));
+  updatePost = (id: string, data: Partial<Omit<BlogPost, 'id'>>) => updateDoc(doc(db, 'posts', id), data);
 
   // --- Events ---
   addEvent = async (event: Omit<CalendarEvent, 'id'>) => {
     await addDoc(collection(db, 'events'), { ...event, createdAt: serverTimestamp() });
   };
   deleteEvent = (id: string) => deleteDoc(doc(db, 'events', id));
+  updateEvent = (id: string, data: Partial<Omit<CalendarEvent, 'id'>>) => updateDoc(doc(db, 'events', id), data);
 
   // --- Resources ---
   addResource = async (resource: Omit<Resource, 'id'>) => {
     await addDoc(collection(db, 'resources'), { ...resource, createdAt: serverTimestamp() });
   };
   deleteResource = (id: string) => deleteDoc(doc(db, 'resources', id));
+  updateResource = (id: string, data: Partial<Omit<Resource, 'id'>>) => updateDoc(doc(db, 'resources', id), data);
 }
 
 export const store = new Store();
