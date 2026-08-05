@@ -116,11 +116,22 @@ function PublicarComponent() {
                   className="w-full rounded-xl border border-border bg-transparent px-4 py-3 text-sm outline-none transition-colors focus:border-foreground"
                 >
                   <option value="">Selecciona una categoría</option>
-                  <option value="Medio Ambiente">Medio Ambiente</option>
-                  <option value="Educación">Educación</option>
-                  <option value="Ayuda Social">Ayuda Social</option>
-                  <option value="Salud">Salud</option>
+                  <option value="Adultos Mayores">Adultos Mayores</option>
+                  <option value="Asistencia humanitaria">Asistencia humanitaria</option>
+                  <option value="Corporativo">Corporativo</option>
                   <option value="Cultura">Cultura</option>
+                  <option value="Deportes">Deportes</option>
+                  <option value="Desarrollo fronterizo">Desarrollo fronterizo</option>
+                  <option value="Educación">Educación</option>
+                  <option value="Medio ambiente">Medio ambiente</option>
+                  <option value="Niñez">Niñez</option>
+                  <option value="Mujer">Mujer</option>
+                  <option value="Voluntariado virtual">Voluntariado virtual</option>
+                  <option value="Inclusión">Inclusión</option>
+                  <option value="Salud">Salud</option>
+                  <option value="Juventud">Juventud</option>
+                  <option value="Promoción y defensoría de los derechos humanos">Promoción y defensoría de los derechos humanos</option>
+                  <option value="Voluntariado internacional">Voluntariado internacional</option>
                 </select>
               </div>
 
