@@ -86,10 +86,17 @@ function Hero() {
     <section id="top" className="relative overflow-hidden">
       {/* Banner image full width */}
       <div className="relative w-full">
+        {/* Desktop Image */}
         <img
           src="/hero-banner.png"
           alt="Campaña Nacional de Promoción del Voluntariado — Transformamos Juntos"
-          className="w-full object-cover"
+          className="hidden w-full object-cover md:block"
+        />
+        {/* Mobile Image */}
+        <img
+          src="/hero-banner-mobile.png"
+          alt="Campaña Nacional de Promoción del Voluntariado — Transformamos Juntos"
+          className="block w-full object-cover md:hidden"
         />
         {/* CTA overlay at bottom center — desktop only */}
         <div className="absolute bottom-8 left-0 right-0 hidden justify-center px-6 md:flex">
@@ -578,27 +585,27 @@ function Testimonials() {
   const items = [
     {
       quote:
-        "Nunca imaginé que dedicar cuatro horas un sábado cambiaría tanto mi semana. Volveré cada mes.",
-      name: "María Fernández",
+        "El voluntariado no solo transforma comunidades; también forma líderes para servir.",
+      name: "Arianna Vargas",
       role: "Voluntaria · Santo Domingo",
     },
     {
       quote:
-        "IVY 2026 nos ayudó a llenar cupos en menos de 48 horas. Antes nos tomaba tres semanas.",
-      name: "Ing. Luis Peralta",
-      role: "Fundación Verde Vivo",
+        "Un país cambia cuando más personas deciden servir.",
+      name: "Gelsy Ureña",
+      role: "Voluntaria",
     },
     {
       quote:
-        "El voluntariado dejó de ser algo puntual. Se volvió un hábito, y una comunidad.",
-      name: "Rosa Batista",
-      role: "Voluntaria · Santiago",
+        "El voluntariado me abrió las puertas para generar un impacto desde distintos espacios.",
+      name: "Otoniel Carela ",
+      role: "Voluntario",
     },
     {
       quote:
-        "Publicar una actividad tomó tres minutos. Recibimos aplicaciones el mismo día.",
-      name: "Enseña por RD",
-      role: "ONG aliada",
+        "No quise quedarme en la queja; decidí convertirme en un agente de cambio.",
+      name: "Reilyn Mabel Acosta Reynoso",
+      role: "Voluntario",
     },
   ];
   return (
