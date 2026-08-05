@@ -160,6 +160,43 @@ function Trust() {
 }
 
 /* -------------------------------------------------------------- */
+/*  Premio Nacional                                                */
+/* -------------------------------------------------------------- */
+
+function PremioSection() {
+  return (
+    <section className="border-b border-border/60 bg-white py-12">
+      <div className="mx-auto flex max-w-6xl flex-col items-center gap-10 px-6 md:flex-row md:items-center md:justify-between">
+        <div className="flex w-full shrink-0 flex-col items-center justify-center md:w-5/12">
+          <img
+            src="/premio.png"
+            alt="Premio Nacional Voluntariado Solidario 2026"
+            className="w-full max-w-[320px] object-contain"
+          />
+        </div>
+        <div className="flex w-full flex-col items-start gap-4 md:w-7/12">
+          <h2 className="text-2xl font-bold leading-tight text-[var(--navy)] sm:text-3xl">
+            Postúlate al Premio Nacional del <span style={{ color: "var(--brand)" }}>Voluntariado</span> Solidario 2026
+          </h2>
+          <p className="text-base text-muted-foreground leading-relaxed">
+            Reconocemos a quienes, con compromiso y solidaridad, transforman vidas y fortalecen sus comunidades. Si tu iniciativa genera un impacto positivo, este es el momento de compartirla.
+          </p>
+          <a
+            href="https://minpre.gob.do/casfl/premio-voluntariado-solidario/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-2 inline-flex items-center gap-2 rounded-full bg-[var(--magenta)] px-7 py-3 text-sm font-bold text-white transition-colors hover:bg-[var(--navy)]"
+          >
+            Conocer más
+            <ArrowRight className="h-4 w-4" />
+          </a>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* -------------------------------------------------------------- */
 /*  About & Metrics                                                */
 /* -------------------------------------------------------------- */
 
@@ -870,9 +907,10 @@ function Landing() {
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
-      <main>
+      <main className="flex-1">
         <Hero />
         <Trust />
+        <PremioSection />
         <About />
         <CalendarSection />
         <Activities />
