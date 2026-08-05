@@ -7,13 +7,10 @@ import {
   MapPin,
   Menu,
   Instagram,
-  Facebook,
-  Twitter,
-  Linkedin,
   Download,
   X,
 } from "lucide-react";
-import { useActivities, usePosts, useEvents, useResources, type BlogPost } from "../lib/store";
+import { useActivities, usePosts, useEvents, useResources, useImpactMedia, type BlogPost } from "../lib/store";
 
 export const Route = createFileRoute("/")({
   component: Landing,
@@ -26,9 +23,9 @@ export const Route = createFileRoute("/")({
 function Logo({ dark = false }: { dark?: boolean }) {
   return (
     <a href="#top" className="flex items-center">
-      <img 
-        src="/logo.png" 
-        alt="IVY 2026 Logo" 
+      <img
+        src="/logo.png"
+        alt="IVY 2026 Logo"
         className={`h-16 md:h-20 object-contain ${dark ? 'brightness-0 invert' : ''}`}
       />
     </a>
@@ -42,7 +39,7 @@ function Logo({ dark = false }: { dark?: boolean }) {
 function Navbar() {
   const links = [
     { label: "Inicio", href: "#top" },
-    { label: "Sobre la Campaña", href: "#about" },
+    { label: "Sobre la campaña", href: "#about" },
     { label: "Actividades", href: "#activities" },
     { label: "Calendario", href: "#calendar" },
   ];
@@ -66,7 +63,7 @@ function Navbar() {
             href="#activities"
             className="hidden rounded-full bg-[var(--brand)] px-5 py-2.5 text-sm font-bold text-white transition-colors hover:bg-[var(--navy)] sm:inline-flex"
           >
-            Únete como Voluntario
+            Únete como voluntario
           </a>
           <button
             aria-label="Menú"
@@ -101,13 +98,12 @@ function Hero() {
           <span className="text-[var(--magenta)] whitespace-nowrap">· 2026</span>
         </div>
 
-        <h1 className="mt-8 max-w-5xl text-5xl font-black leading-[0.95] tracking-[-0.03em] text-foreground sm:text-6xl lg:text-[72px]">
-          <span style={{ color: "var(--magenta)" }}>Voluntarios</span>{" "}
-          <span style={{ color: "var(--brand)" }}>construyendo</span>{" "}
+        <h1 className="mt-8 max-w-5xl text-4xl sm:text-6xl lg:text-[72px] font-black leading-[0.95] tracking-[-0.03em] text-foreground">
+          <span style={{ color: "var(--magenta)" }}>Voluntariado RD:</span>{" "}
+          <span style={{ color: "var(--brand)" }}>transformamos</span>{" "}
           <span className="italic font-serif" style={{ fontFamily: "'Georgia', serif", color: "var(--magenta)" }}>
-            comunidades
-          </span>{" "}
-          <span style={{ color: "var(--brand)" }}>resilientes.</span>
+            juntos
+          </span>
         </h1>
 
         <div className="mt-10 grid grid-cols-1 gap-10 lg:grid-cols-[1.3fr_1fr] lg:items-end">
@@ -124,12 +120,6 @@ function Hero() {
               Encuentra tu voluntariado
               <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
             </a>
-            <a
-              href="#ong-cta"
-              className="inline-flex items-center gap-2 rounded-full border-2 border-foreground/20 px-6 py-3.5 text-sm font-bold text-foreground transition-colors hover:border-[var(--magenta)] hover:text-[var(--magenta)]"
-            >
-              Registra tu ONG
-            </a>
           </div>
         </div>
       </div>
@@ -143,24 +133,25 @@ function Hero() {
 
 function Trust() {
   const partners = [
-    { name: "Ministerio de la presidencia", logo: "https://minpre.gob.do/wp-content/themes/minpre/images/bin/logo_minpre.png" },
-    { name: "CASFL", logo: "https://minpre.gob.do/wp-content/uploads/2025/10/CASFL-logo-1.png" },
-    { name: "Alianza ONG", logo: "https://mediabyte.com.do/media/zoo/images/ALIANZA_ONG_e736d72dfa957ec2d22b9d055785d139.png" },
+    { name: "Ministerio de la Presidencia", logo: "https://minpre.gob.do/wp-content/themes/minpre/images/bin/logo_minpre.png", link: "https://www.presidencia.gob.do/" },
+    { name: "CASFL", logo: "https://minpre.gob.do/wp-content/uploads/2025/10/CASFL-logo-1.png", link: "https://minpre.gob.do/casfl/" },
+    { name: "Alianza ONG", logo: "https://mediabyte.com.do/media/zoo/images/ALIANZA_ONG_e736d72dfa957ec2d22b9d055785d139.png", link: "https://alianzaong.org.do" },
   ];
   return (
     <section className="border-y border-border/60 bg-white/60 py-8">
       <div className="mx-auto flex max-w-6xl flex-col items-start gap-6 px-6 md:flex-row md:items-center md:justify-between">
         <p className="text-xs font-semibold uppercase tracking-[0.25em] text-muted-foreground">
-          Con el respaldo de
+          Con el apoyo de
         </p>
         <div className="flex flex-wrap items-center gap-x-12 gap-y-6">
           {partners.map((p) => (
-            <img
-              key={p.name}
-              src={p.logo}
-              alt={p.name}
-              className="h-10 object-contain sm:h-12 opacity-80 mix-blend-multiply"
-            />
+            <a key={p.name} href={p.link} target="_blank" rel="noopener noreferrer">
+              <img
+                src={p.logo}
+                alt={p.name}
+                className="h-10 object-contain sm:h-12 opacity-80 mix-blend-multiply transition-opacity hover:opacity-100"
+              />
+            </a>
           ))}
         </div>
       </div>
@@ -174,7 +165,7 @@ function Trust() {
 
 function About() {
 
-  
+
   const messages = [
     "El voluntariado impulsa el desarrollo sostenible.",
     "Todas las formas de voluntariado cuentan.",
@@ -190,7 +181,7 @@ function About() {
         <div className="grid grid-cols-1 gap-12 lg:grid-cols-2">
           <div>
             <div className="text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground">
-              Sobre la Campaña
+              Sobre la campaña
             </div>
             <h2 className="mt-4 text-3xl font-black leading-tight tracking-[-0.02em] sm:text-4xl text-foreground">
               Año Internacional de los Voluntarios <span style={{ color: "var(--magenta)" }}>2026</span>
@@ -201,7 +192,7 @@ function About() {
           </div>
           <div>
             <div className="rounded-2xl border border-border bg-white p-8 shadow-sm">
-              <h3 className="text-xl font-bold mb-6 text-[var(--navy)]">Mensajes Clave</h3>
+              <h3 className="text-xl font-bold mb-6 text-[var(--navy)]">Mensajes clave</h3>
               <ul className="space-y-4">
                 {messages.map((msg, i) => (
                   <li key={i} className="flex items-start gap-3">
@@ -243,7 +234,25 @@ function Activities() {
   const [visibleCount, setVisibleCount] = useState(6);
   const [filter, setFilter] = useState("Todas");
 
-  const categories = ["Todas", "Medio Ambiente", "Educación", "Ayuda Social", "Salud", "Cultura"];
+  const categories = [
+    "Todas",
+    "Adultos Mayores",
+    "Asistencia humanitaria",
+    "Corporativo",
+    "Cultura",
+    "Deportes",
+    "Desarrollo fronterizo",
+    "Educación",
+    "Medio ambiente",
+    "Niñez",
+    "Mujer",
+    "Voluntariado virtual",
+    "Inclusión",
+    "Salud",
+    "Juventud",
+    "Promoción y defensoría de los derechos humanos",
+    "Voluntariado internacional"
+  ];
 
   const filteredActivities = activities.filter(a => filter === "Todas" || a.category === filter);
   const visibleActivities = filteredActivities.slice(0, visibleCount);
@@ -259,7 +268,7 @@ function Activities() {
             <h2 className="mt-3 text-4xl font-black tracking-[-0.02em] sm:text-5xl">
               Actividades de
               <br />
-              voluntariados para ti.
+              voluntariados para ti
             </h2>
           </div>
           <a
@@ -272,16 +281,15 @@ function Activities() {
         </div>
 
         {/* Filters */}
-        <div className="mt-8 flex flex-wrap gap-2">
+        <div className="mt-8 flex gap-2 overflow-x-auto pb-4 pt-1 snap-x -mx-6 px-6 md:mx-0 md:px-0 md:flex-wrap md:overflow-visible md:pb-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {categories.map((c) => (
             <button
               key={c}
               onClick={() => { setFilter(c); setVisibleCount(6); }}
-              className={`rounded-full px-4 py-2 text-sm font-bold transition-colors ${
-                filter === c 
-                  ? "bg-foreground text-white" 
-                  : "bg-secondary/50 text-foreground hover:bg-secondary"
-              }`}
+              className={`shrink-0 whitespace-nowrap rounded-full px-4 py-2 text-sm font-bold transition-colors ${filter === c
+                ? "bg-foreground text-white"
+                : "bg-secondary/50 text-foreground hover:bg-secondary"
+                }`}
             >
               {c}
             </button>
@@ -369,10 +377,10 @@ function Activities() {
             </article>
           ))}
         </div>
-        
+
         {visibleCount < filteredActivities.length && (
           <div className="mt-12 text-center">
-            <button 
+            <button
               onClick={() => setVisibleCount(v => v + 3)}
               className="inline-flex items-center gap-2 rounded-full border-2 border-border px-6 py-3.5 text-sm font-bold text-foreground transition-colors hover:border-[var(--brand)] hover:text-[var(--brand)]"
             >
@@ -399,12 +407,12 @@ function OngCta() {
         <div className="grid grid-cols-1 items-end gap-10 lg:grid-cols-[1.4fr_auto]">
           <div className="min-w-0 text-white">
             <div className="text-xs font-semibold uppercase tracking-[0.22em] text-white/50">
-              Para Organizaciones
+              Para organizaciones
             </div>
             <h2 className="mt-4 max-w-2xl text-4xl font-black leading-tight tracking-[-0.02em] sm:text-5xl">
-              ¿Eres una ONG?
+              ¿Eres una ASFL?
               <br />
-              Publica tus actividades.
+              Publica tus actividades
             </h2>
             <p className="mt-5 max-w-xl text-lg text-white/70">
               Sube tus oportunidades de voluntariado de forma gratuita y
@@ -416,12 +424,122 @@ function OngCta() {
             className="group inline-flex items-center gap-2 self-start rounded-full px-7 py-4 text-sm font-bold text-white transition-transform hover:-translate-y-0.5 lg:self-end"
             style={{ background: "var(--magenta)" }}
           >
-            Publicar Actividad
+            Publicar actividad
             <ArrowUpRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
           </Link>
         </div>
       </div>
     </section>
+  );
+}
+
+/* -------------------------------------------------------------- */
+/*  Ley del Voluntariado                                           */
+/* -------------------------------------------------------------- */
+
+function LeyVoluntariado() {
+  return (
+    <section id="ley" className="bg-white py-24 border-t border-border/50">
+      <div className="mx-auto max-w-6xl px-6">
+        <div className="grid grid-cols-1 items-center gap-12 lg:grid-cols-2">
+          {/* Left: text */}
+          <div>
+            <div className="text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground">
+              Marco legal
+            </div>
+            <h2 className="mt-4 text-4xl font-black leading-tight tracking-[-0.02em] sm:text-5xl text-foreground">
+              ¿Ya conoces la ley del voluntariado
+              {" "}<span style={{ color: "var(--magenta)" }}>y su reglamento?</span>
+            </h2>
+            <p className="mt-6 text-lg leading-relaxed text-muted-foreground">
+              El voluntariado es mucho más que una acción solidaria; es un compromiso respaldado por un marco legal sólido. Te invitamos a conocer en detalle la Ley del Voluntariado y su Reglamento, que establecen los derechos y deberes de los voluntarios y de las organizaciones. Además, no te pierdas la Guía del Voluntariado, una herramienta práctica que te orientará en cada paso de tu camino solidario. Conocer tus derechos y responsabilidades te permitirá vivir una experiencia de voluntariado más enriquecedora y segura.
+            </p>
+          </div>
+
+          {/* Right: book image + button */}
+          <div className="flex flex-col items-center gap-6 lg:items-end">
+            <img
+              src="/libro.png"
+              alt="Compendio de Voluntariado — Ley Núm. 61-13 y Decreto Núm. 237-22"
+              className="w-full max-w-xs drop-shadow-2xl"
+            />
+            <a
+              href="https://app.nomi.do/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 rounded-full bg-[var(--brand)] px-7 py-4 text-sm font-bold text-white transition-colors hover:bg-[var(--navy)]"
+            >
+              Consultar
+              <ArrowUpRight className="h-4 w-4" />
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* -------------------------------------------------------------- */
+/*  Impact Gallery                                                 */
+/* -------------------------------------------------------------- */
+
+function ImpactGallery() {
+  const media = useImpactMedia();
+
+  const placeholderSvg = (
+    <svg className="h-8 w-8" style={{ color: "var(--brand)" }} fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909M3.75 18h16.5M12 3v9m0 0-3-3m3 3 3-3" />
+    </svg>
+  );
+
+  // Show up to 6 slots; fill remaining with placeholders
+  const TOTAL = 6;
+  const slots = [
+    ...media.slice(0, TOTAL),
+    ...Array(Math.max(0, TOTAL - media.length)).fill(null),
+  ];
+
+  return (
+    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-6">
+      {slots.map((m, i) => {
+        const inner = m ? (
+          <a
+            href={m.link}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="group relative block h-full w-full overflow-hidden rounded-2xl"
+          >
+            <img
+              src={m.imageUrl}
+              alt={m.caption || `Impacto ${i + 1}`}
+              className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+            />
+            {m.caption && (
+              <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-3 pb-3 pt-8 opacity-0 transition-opacity group-hover:opacity-100">
+                <p className="text-xs font-bold text-white line-clamp-2">{m.caption}</p>
+              </div>
+            )}
+            <div className="absolute inset-0 ring-2 ring-inset ring-[var(--magenta)] opacity-0 rounded-2xl transition-opacity group-hover:opacity-100" />
+          </a>
+        ) : (
+          <div className="flex h-full w-full flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-border bg-secondary text-center">
+            <div
+              className="grid h-10 w-10 place-items-center rounded-full"
+              style={{ background: "color-mix(in oklab, var(--sky) 40%, white)" }}
+            >
+              {placeholderSvg}
+            </div>
+            <div className="text-[10px] font-bold text-foreground/40">Próximamente</div>
+          </div>
+        );
+
+        return (
+          <div key={i} className="aspect-[9/16] overflow-hidden rounded-2xl">
+            {inner}
+          </div>
+        );
+      })}
+    </div>
   );
 }
 
@@ -464,7 +582,7 @@ function Testimonials() {
             Historias
           </div>
           <h2 className="mt-3 text-4xl font-black tracking-[-0.02em] sm:text-5xl">
-            Cada contribución importa.
+            Cada contribución importa
           </h2>
         </div>
 
@@ -507,7 +625,7 @@ function Testimonials() {
           ))}
         </div>
 
-        {/* Image gallery — 6 slots, 3+3 */}
+        {/* Image gallery — 9:16 vertical media grid */}
         <div className="mt-16">
           <div className="mb-6 flex items-center gap-4">
             <span className="h-px flex-1 bg-border" />
@@ -516,78 +634,7 @@ function Testimonials() {
             </span>
             <span className="h-px flex-1 bg-border" />
           </div>
-
-          {/* Row 1 — 3 images */}
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-            {[1, 2, 3].map((n) => (
-              <div
-                key={n}
-                className="group relative aspect-[4/3] overflow-hidden rounded-2xl border border-dashed border-border bg-secondary"
-              >
-                <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 p-6 text-center">
-                  <div
-                    className="grid h-12 w-12 place-items-center rounded-full"
-                    style={{ background: "color-mix(in oklab, var(--sky) 40%, white)" }}
-                  >
-                    <svg
-                      className="h-6 w-6"
-                      style={{ color: "var(--brand)" }}
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth={1.5}
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909M3.75 18h16.5M12 3v9m0 0-3-3m3 3 3-3"
-                      />
-                    </svg>
-                  </div>
-                  <div>
-                    <div className="text-sm font-bold text-foreground/60">Próximamente</div>
-                    <div className="mt-1 text-[11px] text-muted-foreground">Imagen {n} de 6</div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* Row 2 — 3 images */}
-          <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
-            {[4, 5, 6].map((n) => (
-              <div
-                key={n}
-                className="group relative aspect-[4/3] overflow-hidden rounded-2xl border border-dashed border-border bg-secondary"
-              >
-                <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 p-6 text-center">
-                  <div
-                    className="grid h-12 w-12 place-items-center rounded-full"
-                    style={{ background: "color-mix(in oklab, var(--sky) 40%, white)" }}
-                  >
-                    <svg
-                      className="h-6 w-6"
-                      style={{ color: "var(--brand)" }}
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth={1.5}
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909M3.75 18h16.5M12 3v9m0 0-3-3m3 3 3-3"
-                      />
-                    </svg>
-                  </div>
-                  <div>
-                    <div className="text-sm font-bold text-foreground/60">Próximamente</div>
-                    <div className="mt-1 text-[11px] text-muted-foreground">Imagen {n} de 6</div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
+          <ImpactGallery />
         </div>
       </div>
     </section>
@@ -602,7 +649,7 @@ function Footer() {
   return (
     <footer className="text-white" style={{ background: "var(--navy)" }}>
       <div className="mx-auto max-w-6xl px-6 py-16">
-        <div className="grid grid-cols-1 gap-10 md:grid-cols-[1.5fr_1fr_1fr]">
+        <div className="grid grid-cols-1 gap-10 md:grid-cols-[1fr_auto]">
           <div>
             <Logo dark />
             <p className="mt-5 max-w-sm text-sm text-white/60">
@@ -610,47 +657,40 @@ function Footer() {
               construir comunidades más justas y resilientes.
             </p>
             <div className="mt-6 flex gap-3">
-              {[Instagram, Facebook, Twitter, Linkedin].map((Icon, i) => (
-                <a
-                  key={i}
-                  href="#"
-                  aria-label="Red social"
-                  className="grid h-10 w-10 place-items-center rounded-full border border-white/15 text-white/80 transition-colors hover:border-[var(--magenta)] hover:bg-[var(--magenta)] hover:text-white"
-                >
-                  <Icon className="h-4 w-4" />
-                </a>
-              ))}
+              <a
+                href="https://www.instagram.com/casfl.rd/"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Instagram"
+                className="grid h-10 w-10 place-items-center rounded-full border border-white/15 text-white/80 transition-colors hover:border-[var(--magenta)] hover:bg-[var(--magenta)] hover:text-white"
+              >
+                <Instagram className="h-4 w-4" />
+              </a>
             </div>
           </div>
 
-          {[
-            {
-              title: "Campaña",
-              links: ["Sobre IVY 2026", "Actividades", "Calendario"],
-            },
-            {
-              title: "Legal",
-              links: ["Privacidad", "Términos", "Contacto"],
-            },
-          ].map((col) => (
-            <div key={col.title}>
-              <div className="text-xs font-semibold uppercase tracking-[0.22em] text-white/50">
-                {col.title}
-              </div>
-              <ul className="mt-5 space-y-3 text-sm">
-                {col.links.map((l) => (
-                  <li key={l}>
-                    <a
-                      href="#"
-                      className="text-white/80 transition-colors hover:text-[var(--sky)]"
-                    >
-                      {l}
-                    </a>
-                  </li>
-                ))}
-              </ul>
+          <div>
+            <div className="text-xs font-semibold uppercase tracking-[0.22em] text-white/50">
+              Campaña
             </div>
-          ))}
+            <ul className="mt-5 space-y-3 text-sm">
+              <li>
+                <a href="#about" className="text-white/80 transition-colors hover:text-[var(--sky)]">
+                  Sobre IVY 2026
+                </a>
+              </li>
+              <li>
+                <a href="#activities" className="text-white/80 transition-colors hover:text-[var(--sky)]">
+                  Actividades
+                </a>
+              </li>
+              <li>
+                <a href="#calendar" className="text-white/80 transition-colors hover:text-[var(--sky)]">
+                  Calendario
+                </a>
+              </li>
+            </ul>
+          </div>
         </div>
 
         <div className="mt-14 flex flex-col items-start justify-between gap-3 border-t border-white/10 pt-6 text-xs text-white/50 sm:flex-row sm:items-center">
@@ -677,7 +717,7 @@ function CalendarSection() {
             Agenda 2026
           </div>
           <h2 className="mt-3 text-4xl font-black tracking-[-0.02em] sm:text-5xl">
-            Próximos Eventos
+            Próximos eventos
           </h2>
         </div>
 
@@ -702,10 +742,10 @@ function CalendarSection() {
             </div>
           ))}
         </div>
-        
+
         <div className="mt-12 text-center">
           <a href="#" className="inline-flex items-center gap-2 rounded-full border-2 border-border px-6 py-3.5 text-sm font-bold text-foreground transition-colors hover:border-[var(--brand)] hover:text-[var(--brand)]">
-            Descargar Calendario Anual
+            Descargar calendario anual
           </a>
         </div>
       </div>
@@ -734,8 +774,8 @@ function Resources() {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {resources.map((r, i) => (
-            <a 
-              key={i} 
+            <a
+              key={i}
               href={r.link}
               target="_blank"
               rel="noreferrer"
@@ -747,7 +787,7 @@ function Resources() {
                 aria-hidden
               />
               <div className="flex items-center justify-between">
-                <div 
+                <div
                   className="grid h-12 w-12 place-items-center rounded-full bg-secondary"
                   style={{ color: r.color }}
                 >
@@ -771,7 +811,6 @@ function Resources() {
 
 function News() {
   const posts = usePosts();
-  const [selectedPost, setSelectedPost] = useState<BlogPost | null>(null);
 
   if (posts.length === 0) return null;
 
@@ -783,7 +822,7 @@ function News() {
             Blog
           </div>
           <h2 className="mt-3 text-3xl font-black tracking-[-0.02em] sm:text-4xl">
-            Últimas Noticias
+            Últimas noticias
           </h2>
         </div>
 
@@ -791,8 +830,8 @@ function News() {
           {posts.map((post) => (
             <article key={post.id} className="group flex flex-col rounded-2xl border border-border overflow-hidden bg-background card-lift">
               <div className="aspect-[16/9] overflow-hidden">
-                <img 
-                  src={post.imageUrl} 
+                <img
+                  src={post.imageUrl}
                   alt={post.title}
                   className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                   onError={(e) => { e.currentTarget.src = "https://via.placeholder.com/600x400" }}
@@ -806,58 +845,19 @@ function News() {
                 <p className="text-sm text-muted-foreground line-clamp-3 mb-6 flex-1">
                   {post.summary}
                 </p>
-                <button 
-                  onClick={() => setSelectedPost(post)}
+                <a
+                  href={post.link}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="text-sm font-bold text-[var(--navy)] flex items-center gap-1 w-fit hover:underline"
                 >
                   Leer más <ArrowRight className="h-4 w-4" />
-                </button>
+                </a>
               </div>
             </article>
           ))}
         </div>
       </div>
-
-      {/* Modal / Popup for Post */}
-      {selectedPost && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 md:p-6" onClick={() => setSelectedPost(null)}>
-          <div 
-            className="relative w-full max-w-3xl max-h-[90vh] overflow-y-auto bg-background rounded-3xl shadow-2xl flex flex-col"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <button 
-              onClick={() => setSelectedPost(null)}
-              className="absolute top-4 right-4 z-10 grid h-10 w-10 place-items-center rounded-full bg-black/20 text-white backdrop-blur hover:bg-black/40 transition-colors"
-            >
-              <X className="h-5 w-5" />
-            </button>
-            <div className="aspect-[21/9] w-full shrink-0 overflow-hidden bg-secondary">
-              <img 
-                src={selectedPost.imageUrl} 
-                alt={selectedPost.title}
-                className="h-full w-full object-cover"
-                onError={(e) => { e.currentTarget.src = "https://via.placeholder.com/800x400" }}
-              />
-            </div>
-            <div className="p-8 md:p-12">
-              <time className="text-sm font-bold text-[var(--brand)] mb-4 block">{selectedPost.date}</time>
-              <h2 className="text-3xl md:text-4xl font-black text-foreground mb-6 leading-tight tracking-tight">
-                {selectedPost.title}
-              </h2>
-              <div className="prose prose-lg prose-slate text-foreground/80 max-w-none">
-                <p className="text-xl font-medium leading-relaxed mb-8">
-                  {selectedPost.summary}
-                </p>
-                {selectedPost.content && (
-                  <div className="whitespace-pre-wrap">
-                    {selectedPost.content}
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </section>
   );
 }
@@ -877,6 +877,7 @@ function Landing() {
         <CalendarSection />
         <Activities />
         <OngCta />
+        <LeyVoluntariado />
         <Resources />
         <Testimonials />
         <News />

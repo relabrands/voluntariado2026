@@ -1,14 +1,14 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
-import { store, usePosts, useActivities, useEvents, useResources, useAuth } from '../lib/store';
+import { store, usePosts, useActivities, useEvents, useResources, useImpactMedia, useAuth } from '../lib/store';
 import { Trash2, LogOut, LayoutDashboard, Calendar, FileText, DownloadCloud, Activity, Edit2, Loader2, X, TrendingUp, Users } from 'lucide-react';
 
 export const Route = createFileRoute('/admin')({
   component: AdminDashboard,
 });
 
-type Tab = 'resumen' | 'blog' | 'agenda' | 'recursos' | 'actividades';
+type Tab = 'resumen' | 'blog' | 'agenda' | 'recursos' | 'actividades' | 'galeria';
 
 const inputClass = "w-full rounded-xl border border-white/15 bg-white/10 px-4 py-3 text-sm text-white outline-none transition-all focus:border-white/40 focus:bg-white/15 placeholder:text-white/35";
 const labelClass = "block text-[11px] font-bold text-white/55 mb-1.5 uppercase tracking-wider";
@@ -80,6 +80,7 @@ function AdminDashboard() {
           <NavItem label="Blog & Noticias" icon={<FileText className="w-4 h-4" />} active={activeTab === 'blog'} onClick={() => setActiveTab('blog')} />
           <NavItem label="Agenda 2026" icon={<Calendar className="w-4 h-4" />} active={activeTab === 'agenda'} onClick={() => setActiveTab('agenda')} />
           <NavItem label="Recursos" icon={<DownloadCloud className="w-4 h-4" />} active={activeTab === 'recursos'} onClick={() => setActiveTab('recursos')} />
+          <NavItem label="Galería de impacto" icon={<Activity className="w-4 h-4" />} active={activeTab === 'galeria'} onClick={() => setActiveTab('galeria')} />
           <div className="text-[10px] font-bold uppercase tracking-widest text-white/40 px-4 mt-6 mb-3">ONGs</div>
           <NavItem label="Actividades" icon={<Activity className="w-4 h-4" />} active={activeTab === 'actividades'} onClick={() => setActiveTab('actividades')} />
         </nav>
@@ -104,6 +105,7 @@ function AdminDashboard() {
           {activeTab === 'agenda' && <AgendaTab />}
           {activeTab === 'recursos' && <RecursosTab />}
           {activeTab === 'actividades' && <ActividadesTab />}
+          {activeTab === 'galeria' && <GaleriaTab />}
         </div>
       </main>
     </div>
@@ -276,7 +278,7 @@ function BlogTab() {
     setValue('title', p.title);
     setValue('imageUrl', p.imageUrl);
     setValue('summary', p.summary);
-    setValue('content', p.content);
+    setValue('link', p.link);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -306,8 +308,8 @@ function BlogTab() {
             <FormInput label="Resumen">
               <textarea {...register('summary', { required: true })} rows={2} className={inputClass} placeholder="Breve descripción de la noticia..." />
             </FormInput>
-            <FormInput label="Contenido Completo">
-              <textarea {...register('content')} rows={4} className={inputClass} placeholder="Desarrollo completo del artículo..." />
+            <FormInput label="Enlace de la Noticia">
+              <input {...register('link', { required: true })} className={inputClass} placeholder="https://..." />
             </FormInput>
             <SubmitBtn loading={loading} label={editingId ? 'Guardar Cambios' : 'Publicar Noticia'} />
           </form>
@@ -543,6 +545,90 @@ function EmptyState({ label }: { label: string }) {
   return (
     <div className="p-10 text-center bg-white rounded-2xl border border-dashed border-border">
       <p className="text-muted-foreground text-sm">{label}</p>
+    </div>
+  );
+}
+
+function GaleriaTab() {
+  const media = useImpactMedia();
+  const { register, handleSubmit, reset, setValue } = useForm();
+  const [loading, setLoading] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+
+  const handleEdit = (m: any) => {
+    setEditingId(m.id);
+    setValue('imageUrl', m.imageUrl);
+    setValue('link', m.link);
+    setValue('caption', m.caption || '');
+    setValue('order', m.order ?? 0);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const cancelEdit = () => { setEditingId(null); reset(); };
+
+  const onSubmit = async (data: any) => {
+    setLoading(true);
+    try {
+      const payload = { ...data, order: Number(data.order) || 0 };
+      editingId
+        ? await store.updateImpactMedia(editingId, payload)
+        : await store.addImpactMedia(payload);
+      cancelEdit();
+    } catch { alert('Hubo un error al guardar.'); }
+    finally { setLoading(false); }
+  };
+
+  return (
+    <div>
+      <PageHeader title="Galería de impacto" subtitle="Administra las imágenes/videos de historias de impacto (formato 9:16). Cada imagen puede enlazar a Instagram u otro URL." />
+      <div className="grid gap-8 lg:grid-cols-[360px_1fr]">
+        <FormCard title={editingId ? 'Editar imagen' : 'Nueva imagen'} onCancel={editingId ? cancelEdit : undefined}>
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+            <FormInput label="URL de la imagen (9:16)">
+              <input {...register('imageUrl', { required: true })} className={inputClass} placeholder="https://..." />
+            </FormInput>
+            <FormInput label="Enlace al hacer clic (Instagram, Reel, etc.)">
+              <input {...register('link', { required: true })} className={inputClass} placeholder="https://www.instagram.com/p/..." />
+            </FormInput>
+            <FormInput label="Texto / Pie de foto (opcional)">
+              <input {...register('caption')} className={inputClass} placeholder="Ej. Jornada de limpieza costera" />
+            </FormInput>
+            <FormInput label="Orden (número, menor = primero)">
+              <input type="number" {...register('order')} className={inputClass} placeholder="1" />
+            </FormInput>
+            <SubmitBtn loading={loading} label={editingId ? 'Guardar cambios' : 'Añadir imagen'} />
+          </form>
+        </FormCard>
+
+        <div>
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl font-bold" style={{ color: 'var(--navy)' }}>Imágenes ({media.length}/6)</h2>
+          </div>
+          {media.length === 0 && <EmptyState label="No hay imágenes en la galería aún." />}
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+            {media.map((m) => (
+              <div key={m.id} className="relative rounded-2xl overflow-hidden border border-border bg-white shadow-sm group">
+                <div className="aspect-[9/16] w-full overflow-hidden bg-secondary">
+                  <img src={m.imageUrl} alt={m.caption || ''} className="h-full w-full object-cover" />
+                </div>
+                <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent p-3">
+                  {m.caption && <p className="text-xs font-bold text-white line-clamp-2">{m.caption}</p>}
+                  <a href={m.link} target="_blank" rel="noreferrer" className="text-[10px] text-white/60 hover:text-white truncate block mt-1">{m.link}</a>
+                  <div className="flex gap-3 mt-2">
+                    <button onClick={() => handleEdit(m)} className="text-[10px] font-bold text-white/80 flex items-center gap-1 hover:text-white">
+                      <Edit2 className="w-3 h-3" /> Editar
+                    </button>
+                    <button onClick={() => { if (confirm('¿Eliminar esta imagen?')) store.deleteImpactMedia(m.id); }} className="text-[10px] font-bold text-red-300 flex items-center gap-1 hover:text-red-200">
+                      <Trash2 className="w-3 h-3" /> Eliminar
+                    </button>
+                  </div>
+                </div>
+                <div className="absolute top-2 right-2 bg-black/60 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">#{m.order ?? 0}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

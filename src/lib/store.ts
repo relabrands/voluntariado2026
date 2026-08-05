@@ -33,7 +33,7 @@ export type BlogPost = {
   id: string;
   title: string;
   summary: string;
-  content: string;
+  link: string;
   date: string;
   imageUrl: string;
   createdAt?: any;
@@ -59,6 +59,15 @@ export type Resource = {
   createdAt?: any;
 };
 
+export type ImpactMedia = {
+  id: string;
+  imageUrl: string;
+  link: string;
+  caption?: string;
+  order?: number;
+  createdAt?: any;
+};
+
 // --- Store Implementation ---
 type StoreState = {
   user: User | null;
@@ -67,6 +76,7 @@ type StoreState = {
   posts: BlogPost[];
   events: CalendarEvent[];
   resources: Resource[];
+  impactMedia: ImpactMedia[];
 };
 
 class Store {
@@ -81,6 +91,7 @@ class Store {
       posts: [],
       events: [],
       resources: [],
+      impactMedia: [],
     };
 
     // Listen to Auth State
@@ -122,6 +133,15 @@ class Store {
       this.state = {
         ...this.state,
         resources: snap.docs.map(d => ({ id: d.id, ...d.data() } as Resource))
+      };
+      this.notify();
+    }, () => {});
+
+    const impactMediaQ = query(collection(db, 'impactMedia'), orderBy('order', 'asc'));
+    onSnapshot(impactMediaQ, (snap) => {
+      this.state = {
+        ...this.state,
+        impactMedia: snap.docs.map(d => ({ id: d.id, ...d.data() } as ImpactMedia))
       };
       this.notify();
     }, () => {});
@@ -196,6 +216,13 @@ class Store {
   };
   deleteResource = (id: string) => deleteDoc(doc(db, 'resources', id));
   updateResource = (id: string, data: Partial<Omit<Resource, 'id'>>) => updateDoc(doc(db, 'resources', id), data);
+
+  // --- Impact Media ---
+  addImpactMedia = async (media: Omit<ImpactMedia, 'id'>) => {
+    await addDoc(collection(db, 'impactMedia'), { ...media, createdAt: serverTimestamp() });
+  };
+  deleteImpactMedia = (id: string) => deleteDoc(doc(db, 'impactMedia', id));
+  updateImpactMedia = (id: string, data: Partial<Omit<ImpactMedia, 'id'>>) => updateDoc(doc(db, 'impactMedia', id), data);
 }
 
 export const store = new Store();
@@ -220,6 +247,10 @@ export function useEvents() {
 
 export function useResources() {
   return useSyncExternalStore(store.subscribe, () => store.getState().resources);
+}
+
+export function useImpactMedia() {
+  return useSyncExternalStore(store.subscribe, () => store.getState().impactMedia);
 }
 
 export function useAuth() {
