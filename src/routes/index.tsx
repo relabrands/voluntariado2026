@@ -84,44 +84,34 @@ function Navbar() {
 function Hero() {
   return (
     <section id="top" className="relative overflow-hidden">
-      <div className="grid-pattern absolute inset-0 opacity-[0.35]" aria-hidden />
-      <div
-        className="pointer-events-none absolute -top-40 left-1/2 h-[520px] w-[520px] -translate-x-1/2 rounded-full opacity-30 blur-3xl"
-        style={{ background: "var(--sky)" }}
-        aria-hidden
-      />
-
-      <div className="relative mx-auto max-w-6xl px-6 pt-24 pb-20 lg:pt-32 lg:pb-28">
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-          <span className="h-px w-8 bg-foreground/30 hidden sm:block" />
-          <span className="whitespace-nowrap">Año Internacional del Voluntariado</span>
-          <span className="text-[var(--magenta)] whitespace-nowrap">· 2026</span>
+      {/* Banner image full width */}
+      <div className="relative w-full">
+        <img
+          src="/hero-banner.png"
+          alt="Campaña Nacional de Promoción del Voluntariado — Transformamos Juntos"
+          className="w-full object-cover"
+        />
+        {/* CTA overlay at bottom center — desktop only */}
+        <div className="absolute bottom-8 left-0 right-0 hidden justify-center px-6 md:flex">
+          <a
+            href="#activities"
+            className="group inline-flex items-center gap-2 rounded-full bg-[var(--brand)] px-8 py-4 text-sm font-bold text-white shadow-lg transition-colors hover:bg-[var(--navy)]"
+          >
+            Encuentra tu voluntariado
+            <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+          </a>
         </div>
+      </div>
 
-        <h1 className="mt-8 max-w-5xl text-4xl sm:text-6xl lg:text-[72px] font-black leading-[0.95] tracking-[-0.03em] text-foreground">
-          <span style={{ color: "var(--magenta)" }}>Voluntariado RD:</span>{" "}
-          <span style={{ color: "var(--brand)" }}>transformamos</span>{" "}
-          <span className="italic font-serif" style={{ fontFamily: "'Georgia', serif", color: "var(--magenta)" }}>
-            juntos
-          </span>
-        </h1>
-
-        <div className="mt-10 grid grid-cols-1 gap-10 lg:grid-cols-[1.3fr_1fr] lg:items-end">
-          <p className="max-w-xl text-lg leading-relaxed text-muted-foreground">
-            El voluntariado impulsa el desarrollo sostenible. Descubre cómo tu
-            participación puede generar un impacto local con alcance global.
-          </p>
-
-          <div className="flex flex-wrap items-center gap-3 lg:justify-end">
-            <a
-              href="#activities"
-              className="group inline-flex items-center gap-2 rounded-full bg-[var(--brand)] px-6 py-3.5 text-sm font-bold text-white transition-colors hover:bg-[var(--navy)]"
-            >
-              Encuentra tu voluntariado
-              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
-            </a>
-          </div>
-        </div>
+      {/* CTA below image — mobile only */}
+      <div className="flex justify-center bg-white py-7 px-6 md:hidden">
+        <a
+          href="#activities"
+          className="group inline-flex items-center gap-2 rounded-full bg-[var(--brand)] px-8 py-4 text-sm font-bold text-white shadow-md transition-colors hover:bg-[var(--navy)]"
+        >
+          Encuentra tu voluntariado
+          <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+        </a>
       </div>
     </section>
   );
