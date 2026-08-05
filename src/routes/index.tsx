@@ -464,7 +464,7 @@ function LeyVoluntariado() {
               className="w-full max-w-xs drop-shadow-2xl"
             />
             <a
-              href="https://app.nomi.do/"
+              href="https://alianzaong.org.do/wp-content/uploads/2026/08/VoluntariadoRD-2026-3.pdf"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 rounded-full bg-[var(--brand)] px-7 py-4 text-sm font-bold text-white transition-colors hover:bg-[var(--navy)]"
