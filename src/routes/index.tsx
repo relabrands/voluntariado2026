@@ -641,15 +641,15 @@ function CampaignAssets() {
 
   const assetCategories = [
     {
-      title: "Logotipos Oficiales",
-      description: "Logos oficiales en alta resolución (PNG, SVG, versiones a todo color, blanco y fondo oscuro) para cualquier soporte.",
-      tag: "Logos & Identidad",
+      title: "Artes Listos para Publicar",
+      description: "Piezas gráficas terminadas en alta resolución, listas para descargar y compartir directamente en todas tus plataformas digitales.",
+      tag: "Listos para Publicar",
       color: "var(--brand)",
     },
     {
       title: "Plantillas para Redes Sociales",
-      description: "Formatos editables y artes listos para publicar en Instagram (Feed 1:1 y Stories 9:16), Facebook, LinkedIn y X.",
-      tag: "Redes Sociales",
+      description: "Formatos editables y personalizables para adaptar los mensajes de la campaña con la identidad de tu organización.",
+      tag: "Plantillas Editables",
       color: "var(--magenta)",
     },
     {
@@ -725,30 +725,6 @@ function CampaignAssets() {
               </a>
             </div>
           ))}
-        </div>
-
-        {/* Banner destacado para descarga directa */}
-        <div
-          className="mt-12 overflow-hidden rounded-2xl p-8 sm:p-10 text-white flex flex-col sm:flex-row items-center justify-between gap-6"
-          style={{ background: "linear-gradient(135deg, var(--navy) 0%, #0d2b5c 100%)" }}
-        >
-          <div className="max-w-xl text-center sm:text-left">
-            <h4 className="text-xl sm:text-2xl font-bold tracking-tight">
-              ¿Quieres acceder a todos los archivos en alta resolución?
-            </h4>
-            <p className="mt-2 text-sm text-white/80 leading-relaxed">
-              Descarga la carpeta oficial en Google Drive con todos los artes, vectores, tipografías y formatos editables.
-            </p>
-          </div>
-          <a
-            href={DRIVE_KIT_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="shrink-0 inline-flex items-center gap-2 rounded-full bg-[var(--magenta)] px-8 py-4 text-sm font-bold text-white shadow-md transition-colors hover:bg-white hover:text-[var(--navy)]"
-          >
-            <Download className="h-4 w-4" />
-            Descargar en Google Drive
-          </a>
         </div>
       </div>
     </section>
