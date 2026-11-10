@@ -60,7 +60,7 @@ function Navbar() {
         </nav>
         <div className="flex items-center gap-2 justify-self-end">
           <a
-            href="#activities"
+            href="https://dominicanasolidaria.org/directorio/proyectos,vacantes/educacion-y-cultura,voluntariado,voluntariado?q=&f=eyJwb3N0X3R5cGVzIjp7InByb2plY3QiOltdLCJ2YWNhbnQiOltdfSwic29ydCI6InJlY2VudHMifQ=="
             className="hidden rounded-full bg-[var(--brand)] px-5 py-2.5 text-sm font-bold text-white transition-colors hover:bg-[var(--navy)] sm:inline-flex"
           >
             Únete como voluntario
@@ -101,7 +101,7 @@ function Hero() {
         {/* CTA overlay at bottom center — desktop only */}
         <div className="absolute bottom-8 left-0 right-0 hidden justify-center px-6 md:flex">
           <a
-            href="#activities"
+            href="https://dominicanasolidaria.org/directorio/proyectos,vacantes/educacion-y-cultura,voluntariado,voluntariado?q=&f=eyJwb3N0X3R5cGVzIjp7InByb2plY3QiOltdLCJ2YWNhbnQiOltdfSwic29ydCI6InJlY2VudHMifQ=="
             className="group inline-flex items-center gap-2 rounded-full bg-[var(--brand)] px-8 py-4 text-sm font-bold text-white shadow-lg transition-colors hover:bg-[var(--navy)]"
           >
             Encuentra tu voluntariado
@@ -113,7 +113,7 @@ function Hero() {
       {/* CTA below image — mobile only */}
       <div className="flex justify-center bg-white py-7 px-6 md:hidden">
         <a
-          href="#activities"
+          href="https://dominicanasolidaria.org/directorio/proyectos,vacantes/educacion-y-cultura,voluntariado,voluntariado?q=&f=eyJwb3N0X3R5cGVzIjp7InByb2plY3QiOltdLCJ2YWNhbnQiOltdfSwic29ydCI6InJlY2VudHMifQ=="
           className="group inline-flex items-center gap-2 rounded-full bg-[var(--brand)] px-8 py-4 text-sm font-bold text-white shadow-md transition-colors hover:bg-[var(--navy)]"
         >
           Encuentra tu voluntariado
@@ -157,43 +157,6 @@ function Trust() {
 }
 
 /* -------------------------------------------------------------- */
-/*  Premio Nacional                                                */
-/* -------------------------------------------------------------- */
-
-function PremioSection() {
-  return (
-    <section className="border-b border-border/60 bg-white py-12">
-      <div className="mx-auto flex max-w-6xl flex-col items-center gap-10 px-6 md:flex-row md:items-center md:justify-between">
-        <div className="flex w-full shrink-0 flex-col items-center justify-center md:w-5/12">
-          <img
-            src="/premio.png"
-            alt="Premio Nacional Voluntariado Solidario 2026"
-            className="w-full max-w-[320px] object-contain"
-          />
-        </div>
-        <div className="flex w-full flex-col items-start gap-4 md:w-7/12">
-          <h2 className="text-2xl font-bold leading-tight text-[var(--navy)] sm:text-3xl">
-            Postúlate al Premio Nacional del <span style={{ color: "var(--brand)" }}>Voluntariado</span> Solidario 2026
-          </h2>
-          <p className="text-base text-muted-foreground leading-relaxed">
-            Reconocemos a quienes, con compromiso y solidaridad, transforman vidas y fortalecen sus comunidades. Si tu iniciativa genera un impacto positivo, este es el momento de compartirla.
-          </p>
-          <a
-            href="https://minpre.gob.do/casfl/premio-voluntariado-solidario/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="mt-2 inline-flex items-center gap-2 rounded-full bg-[var(--magenta)] px-7 py-3 text-sm font-bold text-white transition-colors hover:bg-[var(--navy)]"
-          >
-            Conocer más
-            <ArrowRight className="h-4 w-4" />
-          </a>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-/* -------------------------------------------------------------- */
 /*  About & Metrics                                                */
 /* -------------------------------------------------------------- */
 
@@ -221,7 +184,7 @@ function About() {
               Año Internacional de los Voluntarios <span style={{ color: "var(--magenta)" }}>2026</span>
             </h2>
             <p className="mt-6 text-lg leading-relaxed text-muted-foreground">
-              El Año Internacional de los Voluntarios 2026 (IVY 2026) reconoce la contribución esencial del voluntariado al desarrollo sostenible y al fortalecimiento de comunidades más resilientes, inclusivas y solidarias. La campaña invita a gobiernos, organizaciones, empresas, instituciones académicas y ciudadanía a visibilizar, apoyar y promover la acción voluntaria en todas sus formas.
+              El Año Internacional de los Voluntarios (IVY 2026) reconoce la contribución esencial del voluntariado al desarrollo sostenible y al fortalecimiento de comunidades más resilientes, inclusivas y solidarias. La campaña invita a gobiernos, organizaciones, empresas, instituciones académicas y ciudadanía a visibilizar, apoyar y promover la acción voluntaria en todas sus formas.
             </p>
           </div>
           <div>
@@ -907,7 +870,6 @@ function Landing() {
       <main className="flex-1">
         <Hero />
         <Trust />
-        <PremioSection />
         <About />
         <CalendarSection />
         <Activities />
