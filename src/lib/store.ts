@@ -101,15 +101,6 @@ class Store {
     });
 
     // Listen to Firestore Collections
-    const activitiesQ = query(collection(db, 'activities'), orderBy('createdAt', 'desc'));
-    onSnapshot(activitiesQ, (snap) => {
-      this.state = {
-        ...this.state,
-        activities: snap.docs.map(d => ({ id: d.id, ...d.data() } as Activity))
-      };
-      this.notify();
-    }, () => {}); // ignore permission errors if rules are strict
-
     const postsQ = query(collection(db, 'posts'), orderBy('createdAt', 'desc'));
     onSnapshot(postsQ, (snap) => {
       this.state = {

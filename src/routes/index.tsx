@@ -1,20 +1,21 @@
 import { useState } from "react";
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import {
   ArrowRight,
   ArrowUpRight,
-  Calendar,
-  MapPin,
   Menu,
   Instagram,
   Download,
   X,
 } from "lucide-react";
-import { useActivities, usePosts, useEvents, useResources, useImpactMedia, type BlogPost } from "../lib/store";
+import { usePosts, useEvents, useResources, useImpactMedia, type BlogPost } from "../lib/store";
 
 export const Route = createFileRoute("/")({
   component: Landing,
 });
+
+const DOMINICANA_SOLIDARIA_URL =
+  "https://dominicanasolidaria.org/directorio/proyectos,vacantes/educacion-y-cultura,voluntariado,voluntariado?q=&f=eyJwb3N0X3R5cGVzIjp7InByb2plY3QiOltdLCJ2YWNhbnQiOltdfSwic29ydCI6InJlY2VudHMifQ==";
 
 /* -------------------------------------------------------------- */
 /*  Logo                                                           */
@@ -37,11 +38,13 @@ function Logo({ dark = false }: { dark?: boolean }) {
 /* -------------------------------------------------------------- */
 
 function Navbar() {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const links = [
     { label: "Inicio", href: "#top" },
     { label: "Sobre la campaña", href: "#about" },
-    { label: "Actividades", href: "#activities" },
+    { label: "Actividades", href: DOMINICANA_SOLIDARIA_URL, external: true },
     { label: "Calendario", href: "#calendar" },
+    { label: "Artes", href: "#artes" },
   ];
   return (
     <header className="sticky top-0 z-50 border-b border-border/60 bg-background/85 backdrop-blur">
@@ -50,8 +53,10 @@ function Navbar() {
         <nav className="hidden justify-center gap-8 md:flex">
           {links.map((l) => (
             <a
-              key={l.href}
+              key={l.label}
               href={l.href}
+              target={l.external ? "_blank" : undefined}
+              rel={l.external ? "noopener noreferrer" : undefined}
               className="text-sm font-semibold text-foreground/70 transition-colors hover:text-[var(--brand)]"
             >
               {l.label}
@@ -60,19 +65,48 @@ function Navbar() {
         </nav>
         <div className="flex items-center gap-2 justify-self-end">
           <a
-            href="https://dominicanasolidaria.org/directorio/proyectos,vacantes/educacion-y-cultura,voluntariado,voluntariado?q=&f=eyJwb3N0X3R5cGVzIjp7InByb2plY3QiOltdLCJ2YWNhbnQiOltdfSwic29ydCI6InJlY2VudHMifQ=="
+            href={DOMINICANA_SOLIDARIA_URL}
+            target="_blank"
+            rel="noopener noreferrer"
             className="hidden rounded-full bg-[var(--brand)] px-5 py-2.5 text-sm font-bold text-white transition-colors hover:bg-[var(--navy)] sm:inline-flex"
           >
             Únete como voluntario
           </a>
           <button
             aria-label="Menú"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             className="grid h-10 w-10 place-items-center rounded-full border border-border md:hidden"
           >
-            <Menu className="h-5 w-5" />
+            {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </button>
         </div>
       </div>
+      {mobileMenuOpen && (
+        <div className="border-b border-border/60 bg-background px-6 py-4 md:hidden">
+          <nav className="flex flex-col gap-4">
+            {links.map((l) => (
+              <a
+                key={l.label}
+                href={l.href}
+                target={l.external ? "_blank" : undefined}
+                rel={l.external ? "noopener noreferrer" : undefined}
+                onClick={() => setMobileMenuOpen(false)}
+                className="text-base font-semibold text-foreground/80 transition-colors hover:text-[var(--brand)]"
+              >
+                {l.label}
+              </a>
+            ))}
+            <a
+              href={DOMINICANA_SOLIDARIA_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-2 inline-flex justify-center rounded-full bg-[var(--brand)] px-5 py-2.5 text-sm font-bold text-white transition-colors hover:bg-[var(--navy)]"
+            >
+              Únete como voluntario
+            </a>
+          </nav>
+        </div>
+      )}
     </header>
   );
 }
@@ -205,226 +239,6 @@ function About() {
         </div>
 
 
-      </div>
-    </section>
-  );
-}
-
-/* -------------------------------------------------------------- */
-/*  Activities — editorial cards, no images                        */
-/* -------------------------------------------------------------- */
-
-type Activity = {
-  id: string;
-  category: string;
-  categoryColor: string;
-  title: string;
-  description: string;
-  date: string;
-  location: string;
-  ong: string;
-  spots: number;
-};
-
-function Activities() {
-  const activities = useActivities();
-  const [visibleCount, setVisibleCount] = useState(6);
-  const [filter, setFilter] = useState("Todas");
-
-  const categories = [
-    "Todas",
-    "Adultos Mayores",
-    "Asistencia humanitaria",
-    "Corporativo",
-    "Cultura",
-    "Deportes",
-    "Desarrollo fronterizo",
-    "Educación",
-    "Medio ambiente",
-    "Niñez",
-    "Mujer",
-    "Voluntariado virtual",
-    "Inclusión",
-    "Salud",
-    "Juventud",
-    "Promoción y defensoría de los derechos humanos",
-    "Voluntariado internacional"
-  ];
-
-  const filteredActivities = activities.filter(a => filter === "Todas" || a.category === filter);
-  const visibleActivities = filteredActivities.slice(0, visibleCount);
-
-  return (
-    <section id="activities" className="bg-white py-24">
-      <div className="mx-auto max-w-6xl px-6">
-        <div className="flex flex-col items-start justify-between gap-6 md:flex-row md:items-end">
-          <div className="max-w-2xl">
-            <div className="text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground">
-              Oportunidades
-            </div>
-            <h2 className="mt-3 text-4xl font-black tracking-[-0.02em] sm:text-5xl">
-              Actividades de
-              <br />
-              voluntariados para ti
-            </h2>
-          </div>
-          <a
-            href="#calendar"
-            className="group inline-flex items-center gap-2 text-sm font-bold text-[var(--brand)] hover:text-[var(--navy)]"
-          >
-            Ver el calendario completo
-            <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-          </a>
-        </div>
-
-        {/* Filters */}
-        <div className="mt-8 flex gap-2 overflow-x-auto pb-4 pt-1 snap-x -mx-6 px-6 md:mx-0 md:px-0 md:flex-wrap md:overflow-visible md:pb-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-          {categories.map((c) => (
-            <button
-              key={c}
-              onClick={() => { setFilter(c); setVisibleCount(6); }}
-              className={`shrink-0 whitespace-nowrap rounded-full px-4 py-2 text-sm font-bold transition-colors ${filter === c
-                ? "bg-foreground text-white"
-                : "bg-secondary/50 text-foreground hover:bg-secondary"
-                }`}
-            >
-              {c}
-            </button>
-          ))}
-        </div>
-
-        {filteredActivities.length === 0 && (
-          <div className="mt-12 text-center text-muted-foreground py-12">
-            No hay actividades disponibles para esta categoría.
-          </div>
-        )}
-
-        <div className="mt-8 grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
-          {visibleActivities.map((a, i) => (
-            <article
-              key={a.id}
-              className="card-lift group relative flex flex-col overflow-hidden rounded-2xl border border-border bg-white p-7"
-            >
-              <div
-                className="absolute inset-x-0 top-0 h-1"
-                style={{ background: a.categoryColor }}
-                aria-hidden
-              />
-              <div className="flex items-start justify-between gap-4">
-                <span
-                  className="inline-flex items-center rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-white"
-                  style={{ background: a.categoryColor }}
-                >
-                  {a.category}
-                </span>
-                <span className="font-mono text-xs font-semibold tabular-nums text-muted-foreground">
-                  N.º {String(i + 1).padStart(2, '0')}
-                </span>
-              </div>
-
-              <h3 className="mt-6 text-xl font-bold leading-snug tracking-tight text-foreground">
-                {a.title}
-              </h3>
-              <p className="mt-3 text-sm leading-relaxed text-muted-foreground line-clamp-2">
-                {a.description}
-              </p>
-
-              <dl className="mt-auto space-y-2 border-t border-dashed border-border pt-5 text-sm">
-                <div className="flex items-center gap-2.5 text-foreground/80">
-                  <Calendar className="h-4 w-4 shrink-0 text-foreground/40" />
-                  <dd className="font-medium">{a.date}</dd>
-                </div>
-                <div className="flex items-center gap-2.5 text-foreground/80">
-                  <MapPin className="h-4 w-4 shrink-0 text-foreground/40" />
-                  <dd className="font-medium">{a.location}</dd>
-                </div>
-              </dl>
-
-              <div className="mt-6 flex items-end justify-between gap-4">
-                <div className="min-w-0">
-                  <div className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
-                    Organiza
-                  </div>
-                  <div className="mt-0.5 truncate text-sm font-bold text-foreground">
-                    {a.ong}
-                  </div>
-                </div>
-                <div className="text-right">
-                  <div className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
-                    Cupos
-                  </div>
-                  <div
-                    className="mt-0.5 text-sm font-bold"
-                    style={{ color: a.categoryColor }}
-                  >
-                    {a.spots} disp.
-                  </div>
-                </div>
-              </div>
-
-              <a
-                href={a.link}
-                target="_blank"
-                rel="noreferrer"
-                className="mt-7 inline-flex w-full items-center justify-center gap-2 rounded-full bg-[var(--magenta)] px-5 py-3 text-sm font-bold text-white transition-colors hover:bg-[var(--brand)]"
-              >
-                Participar
-                <ArrowUpRight className="h-4 w-4" />
-              </a>
-            </article>
-          ))}
-        </div>
-
-        {visibleCount < filteredActivities.length && (
-          <div className="mt-12 text-center">
-            <button
-              onClick={() => setVisibleCount(v => v + 3)}
-              className="inline-flex items-center gap-2 rounded-full border-2 border-border px-6 py-3.5 text-sm font-bold text-foreground transition-colors hover:border-[var(--brand)] hover:text-[var(--brand)]"
-            >
-              Ver más oportunidades
-            </button>
-          </div>
-        )}
-      </div>
-    </section>
-  );
-}
-
-/* -------------------------------------------------------------- */
-/*  ONG CTA                                                        */
-/* -------------------------------------------------------------- */
-
-function OngCta() {
-  return (
-    <section id="ong-cta" className="px-6 py-24">
-      <div
-        className="mx-auto max-w-6xl overflow-hidden rounded-[28px] px-8 py-16 sm:px-14 sm:py-20"
-        style={{ background: "var(--navy)" }}
-      >
-        <div className="grid grid-cols-1 items-end gap-10 lg:grid-cols-[1.4fr_auto]">
-          <div className="min-w-0 text-white">
-            <div className="text-xs font-semibold uppercase tracking-[0.22em] text-white/50">
-              Para organizaciones
-            </div>
-            <h2 className="mt-4 max-w-2xl text-4xl font-black leading-tight tracking-[-0.02em] sm:text-5xl">
-              ¿Eres una ASFL?
-              <br />
-              Publica tus actividades
-            </h2>
-            <p className="mt-5 max-w-xl text-lg text-white/70">
-              Sube tus oportunidades de voluntariado de forma gratuita y
-              conecta con miles de ciudadanos dispuestos a ayudar.
-            </p>
-          </div>
-          <Link
-            to="/publicar"
-            className="group inline-flex items-center gap-2 self-start rounded-full px-7 py-4 text-sm font-bold text-white transition-transform hover:-translate-y-0.5 lg:self-end"
-            style={{ background: "var(--magenta)" }}
-          >
-            Publicar actividad
-            <ArrowUpRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
-          </Link>
-        </div>
       </div>
     </section>
   );
@@ -572,7 +386,7 @@ function Testimonials() {
     },
   ];
   return (
-    <section id="testimonials" className="bg-white py-24">
+    <section id="testimonials" className="bg-white py-24 border-t border-border/50">
       <div className="mx-auto max-w-6xl px-6">
         <div className="max-w-2xl">
           <div className="text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground">
@@ -677,13 +491,28 @@ function Footer() {
                 </a>
               </li>
               <li>
-                <a href="#activities" className="text-white/80 transition-colors hover:text-[var(--sky)]">
+                <a
+                  href={DOMINICANA_SOLIDARIA_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-white/80 transition-colors hover:text-[var(--sky)]"
+                >
                   Actividades
                 </a>
               </li>
               <li>
                 <a href="#calendar" className="text-white/80 transition-colors hover:text-[var(--sky)]">
                   Calendario
+                </a>
+              </li>
+              <li>
+                <a href="#artes" className="text-white/80 transition-colors hover:text-[var(--sky)]">
+                  Artes de la campaña
+                </a>
+              </li>
+              <li>
+                <a href="#resources" className="text-white/80 transition-colors hover:text-[var(--sky)]">
+                  Recursos para ONG
                 </a>
               </li>
             </ul>
@@ -803,6 +632,130 @@ function Resources() {
 }
 
 /* -------------------------------------------------------------- */
+/*  Artes de la Campaña                                            */
+/* -------------------------------------------------------------- */
+
+function CampaignAssets() {
+  const DRIVE_KIT_URL =
+    "https://drive.google.com/file/d/1O79_Z1xLd1xiHK8euY_-AzidFbB7oNOi/view?usp=sharing";
+
+  const assetCategories = [
+    {
+      title: "Logotipos Oficiales",
+      description: "Logos oficiales en alta resolución (PNG, SVG, versiones a todo color, blanco y fondo oscuro) para cualquier soporte.",
+      tag: "Logos & Identidad",
+      color: "var(--brand)",
+    },
+    {
+      title: "Plantillas para Redes Sociales",
+      description: "Formatos editables y artes listos para publicar en Instagram (Feed 1:1 y Stories 9:16), Facebook, LinkedIn y X.",
+      tag: "Redes Sociales",
+      color: "var(--magenta)",
+    },
+    {
+      title: "Materiales de Impresión",
+      description: "Afiches, volantes, pendones y roll-ups en alta definición listos para imprenta en eventos y jornadas de voluntariado.",
+      tag: "Impresos & Eventos",
+      color: "var(--navy)",
+    },
+  ];
+
+  return (
+    <section id="artes" className="bg-white py-24 border-t border-border/50">
+      <div className="mx-auto max-w-6xl px-6">
+        <div className="flex flex-col items-start justify-between gap-6 md:flex-row md:items-end mb-12">
+          <div className="max-w-2xl">
+            <div className="text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground">
+              Kit de Difusión
+            </div>
+            <h2 className="mt-3 text-3xl font-black tracking-[-0.02em] sm:text-4xl text-foreground">
+              Descarga los artes de la <span style={{ color: "var(--magenta)" }}>campaña</span>
+            </h2>
+            <p className="mt-4 text-base text-muted-foreground leading-relaxed">
+              Súmate a la difusión del Año Internacional de los Voluntarios 2026. Ponemos a tu disposición los artes oficiales, plantillas editables y piezas gráficas para que tu organización, empresa o iniciativa comparta el mensaje solidario.
+            </p>
+          </div>
+          <a
+            href={DRIVE_KIT_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="group inline-flex items-center gap-2 rounded-full bg-[var(--brand)] px-7 py-3.5 text-sm font-bold text-white shadow-sm transition-all hover:bg-[var(--navy)] hover:shadow"
+          >
+            <Download className="h-4 w-4" />
+            Descargar Kit Completo
+            <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+          </a>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {assetCategories.map((cat, i) => (
+            <div
+              key={i}
+              className="card-lift flex flex-col justify-between rounded-2xl border border-border bg-background p-7 transition-all hover:border-[var(--brand)]/50"
+            >
+              <div>
+                <div className="flex items-center justify-between mb-5">
+                  <span
+                    className="inline-flex items-center rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-white"
+                    style={{ background: cat.color }}
+                  >
+                    {cat.tag}
+                  </span>
+                  <div
+                    className="grid h-10 w-10 place-items-center rounded-full bg-secondary"
+                    style={{ color: cat.color }}
+                  >
+                    <Download className="h-4 w-4" />
+                  </div>
+                </div>
+                <h3 className="text-lg font-bold text-foreground mb-2">
+                  {cat.title}
+                </h3>
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  {cat.description}
+                </p>
+              </div>
+              <a
+                href={DRIVE_KIT_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-6 inline-flex items-center gap-1.5 text-xs font-bold text-[var(--navy)] hover:text-[var(--brand)] transition-colors"
+              >
+                Acceder a los archivos <ArrowUpRight className="h-3.5 w-3.5" />
+              </a>
+            </div>
+          ))}
+        </div>
+
+        {/* Banner destacado para descarga directa */}
+        <div
+          className="mt-12 overflow-hidden rounded-2xl p-8 sm:p-10 text-white flex flex-col sm:flex-row items-center justify-between gap-6"
+          style={{ background: "linear-gradient(135deg, var(--navy) 0%, #0d2b5c 100%)" }}
+        >
+          <div className="max-w-xl text-center sm:text-left">
+            <h4 className="text-xl sm:text-2xl font-bold tracking-tight">
+              ¿Quieres acceder a todos los archivos en alta resolución?
+            </h4>
+            <p className="mt-2 text-sm text-white/80 leading-relaxed">
+              Descarga la carpeta oficial en Google Drive con todos los artes, vectores, tipografías y formatos editables.
+            </p>
+          </div>
+          <a
+            href={DRIVE_KIT_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="shrink-0 inline-flex items-center gap-2 rounded-full bg-[var(--magenta)] px-8 py-4 text-sm font-bold text-white shadow-md transition-colors hover:bg-white hover:text-[var(--navy)]"
+          >
+            <Download className="h-4 w-4" />
+            Descargar en Google Drive
+          </a>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* -------------------------------------------------------------- */
 /*  News / Blog                                                    */
 /* -------------------------------------------------------------- */
 
@@ -872,12 +825,11 @@ function Landing() {
         <Trust />
         <About />
         <CalendarSection />
-        <Activities />
-        <OngCta />
         <LeyVoluntariado />
         <Resources />
-        <Testimonials />
+        <CampaignAssets />
         <News />
+        <Testimonials />
       </main>
       <Footer />
     </div>
