@@ -7,6 +7,7 @@ import {
   deleteDoc, 
   doc, 
   updateDoc,
+  setDoc,
   serverTimestamp,
   query,
   orderBy
@@ -68,6 +69,18 @@ export type ImpactMedia = {
   createdAt?: any;
 };
 
+export type CampaignAsset = {
+  id: string;
+  title: string;
+  description?: string;
+  desc?: string;
+  link: string;
+  tag?: string;
+  color: string;
+  order?: number;
+  createdAt?: any;
+};
+
 // --- Store Implementation ---
 type StoreState = {
   user: User | null;
@@ -77,6 +90,8 @@ type StoreState = {
   events: CalendarEvent[];
   resources: Resource[];
   impactMedia: ImpactMedia[];
+  campaignAssets: CampaignAsset[];
+  campaignKitUrl: string;
 };
 
 class Store {
@@ -92,6 +107,8 @@ class Store {
       events: [],
       resources: [],
       impactMedia: [],
+      campaignAssets: [],
+      campaignKitUrl: "https://drive.google.com/file/d/1O79_Z1xLd1xiHK8euY_-AzidFbB7oNOi/view?usp=sharing",
     };
 
     // Listen to Auth State
@@ -135,6 +152,23 @@ class Store {
         impactMedia: snap.docs.map(d => ({ id: d.id, ...d.data() } as ImpactMedia))
       };
       this.notify();
+    }, () => {});
+
+    const campaignAssetsQ = query(collection(db, 'campaignAssets'), orderBy('order', 'asc'));
+    onSnapshot(campaignAssetsQ, (snap) => {
+      this.state = {
+        ...this.state,
+        campaignAssets: snap.docs.map(d => ({ id: d.id, ...d.data() } as CampaignAsset))
+      };
+      this.notify();
+    }, () => {});
+
+    const campaignSettingsDoc = doc(db, 'settings', 'campaign');
+    onSnapshot(campaignSettingsDoc, (snap) => {
+      if (snap.exists() && snap.data()?.kitUrl) {
+        this.state = { ...this.state, campaignKitUrl: snap.data().kitUrl };
+        this.notify();
+      }
     }, () => {});
   }
 
@@ -214,6 +248,18 @@ class Store {
   };
   deleteImpactMedia = (id: string) => deleteDoc(doc(db, 'impactMedia', id));
   updateImpactMedia = (id: string, data: Partial<Omit<ImpactMedia, 'id'>>) => updateDoc(doc(db, 'impactMedia', id), data);
+
+  // --- Campaign Assets ---
+  addCampaignAsset = async (asset: Omit<CampaignAsset, 'id'>) => {
+    await addDoc(collection(db, 'campaignAssets'), { ...asset, createdAt: serverTimestamp() });
+  };
+  deleteCampaignAsset = (id: string) => deleteDoc(doc(db, 'campaignAssets', id));
+  updateCampaignAsset = (id: string, data: Partial<Omit<CampaignAsset, 'id'>>) => updateDoc(doc(db, 'campaignAssets', id), data);
+  updateCampaignKitUrl = async (kitUrl: string) => {
+    await setDoc(doc(db, 'settings', 'campaign'), { kitUrl }, { merge: true });
+    this.state = { ...this.state, campaignKitUrl: kitUrl };
+    this.notify();
+  };
 }
 
 export const store = new Store();
@@ -242,6 +288,14 @@ export function useResources() {
 
 export function useImpactMedia() {
   return useSyncExternalStore(store.subscribe, () => store.getState().impactMedia);
+}
+
+export function useCampaignAssets() {
+  return useSyncExternalStore(store.subscribe, () => store.getState().campaignAssets);
+}
+
+export function useCampaignKitUrl() {
+  return useSyncExternalStore(store.subscribe, () => store.getState().campaignKitUrl);
 }
 
 export function useAuth() {

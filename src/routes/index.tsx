@@ -6,9 +6,18 @@ import {
   Menu,
   Instagram,
   Download,
+  Play,
   X,
 } from "lucide-react";
-import { usePosts, useEvents, useResources, useImpactMedia, type BlogPost } from "../lib/store";
+import {
+  usePosts,
+  useEvents,
+  useResources,
+  useImpactMedia,
+  useCampaignAssets,
+  useCampaignKitUrl,
+  type BlogPost,
+} from "../lib/store";
 
 export const Route = createFileRoute("/")({
   component: Landing,
@@ -313,21 +322,33 @@ function ImpactGallery() {
   return (
     <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-6">
       {slots.map((m, i) => {
+        const rawLink = m?.link?.trim();
+        const targetLink = rawLink
+          ? (rawLink.startsWith("http://") || rawLink.startsWith("https://") ? rawLink : `https://${rawLink}`)
+          : undefined;
+
         const inner = m ? (
           <a
-            href={m.link}
+            href={targetLink}
             target="_blank"
             rel="noopener noreferrer"
-            className="group relative block h-full w-full overflow-hidden rounded-2xl"
+            aria-label={m.caption || `Historia de impacto ${i + 1}`}
+            className="group relative block h-full w-full overflow-hidden rounded-2xl bg-black"
           >
             <img
               src={m.imageUrl}
-              alt={m.caption || `Impacto ${i + 1}`}
+              alt={m.caption || `Historia de impacto ${i + 1}`}
               className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
             />
+            {/* Play badge overlay indicating it opens video/material */}
+            <div className="absolute inset-0 flex items-center justify-center bg-black/25 transition-colors group-hover:bg-black/45">
+              <div className="grid h-12 w-12 place-items-center rounded-full bg-white/90 text-[var(--navy)] shadow-lg backdrop-blur-sm transition-transform duration-300 group-hover:scale-110 group-hover:bg-white group-hover:text-[var(--magenta)]">
+                <Play className="h-5 w-5 fill-current ml-0.5" />
+              </div>
+            </div>
             {m.caption && (
-              <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-3 pb-3 pt-8 opacity-0 transition-opacity group-hover:opacity-100">
-                <p className="text-xs font-bold text-white line-clamp-2">{m.caption}</p>
+              <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 via-black/40 to-transparent px-3 pb-3 pt-8">
+                <p className="text-xs font-bold text-white line-clamp-2 leading-tight">{m.caption}</p>
               </div>
             )}
             <div className="absolute inset-0 ring-2 ring-inset ring-[var(--magenta)] opacity-0 rounded-2xl transition-opacity group-hover:opacity-100" />
@@ -636,29 +657,40 @@ function Resources() {
 /* -------------------------------------------------------------- */
 
 function CampaignAssets() {
-  const DRIVE_KIT_URL =
-    "https://drive.google.com/file/d/1O79_Z1xLd1xiHK8euY_-AzidFbB7oNOi/view?usp=sharing";
+  const customAssets = useCampaignAssets();
+  const kitUrl = useCampaignKitUrl();
 
-  const assetCategories = [
+  const defaultCategories = [
     {
+      id: "default-1",
       title: "Artes Listos para Publicar",
       description: "Piezas gráficas terminadas en alta resolución, listas para descargar y compartir directamente en todas tus plataformas digitales.",
       tag: "Listos para Publicar",
       color: "var(--brand)",
+      link: kitUrl,
+      order: 1,
     },
     {
+      id: "default-2",
       title: "Plantillas para Redes Sociales",
       description: "Formatos editables y personalizables para adaptar los mensajes de la campaña con la identidad de tu organización.",
       tag: "Plantillas Editables",
       color: "var(--magenta)",
+      link: kitUrl,
+      order: 2,
     },
     {
+      id: "default-3",
       title: "Materiales de Impresión",
       description: "Afiches, volantes, pendones y roll-ups en alta definición listos para imprenta en eventos y jornadas de voluntariado.",
       tag: "Impresos & Eventos",
       color: "var(--navy)",
+      link: kitUrl,
+      order: 3,
     },
   ];
+
+  const categories = customAssets && customAssets.length > 0 ? customAssets : defaultCategories;
 
   return (
     <section id="artes" className="bg-white py-24 border-t border-border/50">
@@ -676,7 +708,7 @@ function CampaignAssets() {
             </p>
           </div>
           <a
-            href={DRIVE_KIT_URL}
+            href={kitUrl}
             target="_blank"
             rel="noopener noreferrer"
             className="group inline-flex items-center gap-2 rounded-full bg-[var(--brand)] px-7 py-3.5 text-sm font-bold text-white shadow-sm transition-all hover:bg-[var(--navy)] hover:shadow"
@@ -688,43 +720,50 @@ function CampaignAssets() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {assetCategories.map((cat, i) => (
-            <div
-              key={i}
-              className="card-lift flex flex-col justify-between rounded-2xl border border-border bg-background p-7 transition-all hover:border-[var(--brand)]/50"
-            >
-              <div>
-                <div className="flex items-center justify-between mb-5">
-                  <span
-                    className="inline-flex items-center rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-white"
-                    style={{ background: cat.color }}
-                  >
-                    {cat.tag}
-                  </span>
-                  <div
-                    className="grid h-10 w-10 place-items-center rounded-full bg-secondary"
-                    style={{ color: cat.color }}
-                  >
-                    <Download className="h-4 w-4" />
-                  </div>
-                </div>
-                <h3 className="text-lg font-bold text-foreground mb-2">
-                  {cat.title}
-                </h3>
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                  {cat.description}
-                </p>
-              </div>
-              <a
-                href={DRIVE_KIT_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="mt-6 inline-flex items-center gap-1.5 text-xs font-bold text-[var(--navy)] hover:text-[var(--brand)] transition-colors"
+          {categories.map((cat, i) => {
+            const raw = cat.link?.trim();
+            const linkHref = raw
+              ? (raw.startsWith("http://") || raw.startsWith("https://") ? raw : `https://${raw}`)
+              : kitUrl;
+
+            return (
+              <div
+                key={cat.id || i}
+                className="card-lift flex flex-col justify-between rounded-2xl border border-border bg-background p-7 transition-all hover:border-[var(--brand)]/50"
               >
-                Acceder a los archivos <ArrowUpRight className="h-3.5 w-3.5" />
-              </a>
-            </div>
-          ))}
+                <div>
+                  <div className="flex items-center justify-between mb-5">
+                    <span
+                      className="inline-flex items-center rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-white"
+                      style={{ background: cat.color || "var(--brand)" }}
+                    >
+                      {cat.tag}
+                    </span>
+                    <div
+                      className="grid h-10 w-10 place-items-center rounded-full bg-secondary"
+                      style={{ color: cat.color || "var(--brand)" }}
+                    >
+                      <Download className="h-4 w-4" />
+                    </div>
+                  </div>
+                  <h3 className="text-lg font-bold text-foreground mb-2">
+                    {cat.title}
+                  </h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    {cat.description || cat.desc}
+                  </p>
+                </div>
+                <a
+                  href={linkHref}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-6 inline-flex items-center gap-1.5 text-xs font-bold text-[var(--navy)] hover:text-[var(--brand)] transition-colors"
+                >
+                  Acceder a los archivos <ArrowUpRight className="h-3.5 w-3.5" />
+                </a>
+              </div>
+            );
+          })}
         </div>
       </div>
     </section>

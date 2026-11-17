@@ -1,8 +1,38 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
-import { store, usePosts, useActivities, useEvents, useResources, useImpactMedia, useAuth } from '../lib/store';
-import { Trash2, LogOut, LayoutDashboard, Calendar, FileText, DownloadCloud, Activity, Edit2, Loader2, X, TrendingUp, Users } from 'lucide-react';
+import {
+  store,
+  usePosts,
+  useActivities,
+  useEvents,
+  useResources,
+  useImpactMedia,
+  useCampaignAssets,
+  useCampaignKitUrl,
+  useAuth,
+  type CampaignAsset,
+} from '../lib/store';
+import {
+  Trash2,
+  LogOut,
+  LayoutDashboard,
+  Calendar,
+  FileText,
+  DownloadCloud,
+  Activity,
+  Edit2,
+  Loader2,
+  X,
+  TrendingUp,
+  Users,
+  Upload,
+  Play,
+  ExternalLink,
+  Palette,
+  Check,
+} from 'lucide-react';
+import { uploadImageFile } from '../lib/upload';
 
 export const Route = createFileRoute('/admin')({
   component: AdminDashboard,
@@ -80,7 +110,7 @@ function AdminDashboard() {
           <NavItem label="Blog & Noticias" icon={<FileText className="w-4 h-4" />} active={activeTab === 'blog'} onClick={() => setActiveTab('blog')} />
           <NavItem label="Agenda 2026" icon={<Calendar className="w-4 h-4" />} active={activeTab === 'agenda'} onClick={() => setActiveTab('agenda')} />
           <NavItem label="Recursos" icon={<DownloadCloud className="w-4 h-4" />} active={activeTab === 'recursos'} onClick={() => setActiveTab('recursos')} />
-          <NavItem label="Galería de impacto" icon={<Activity className="w-4 h-4" />} active={activeTab === 'galeria'} onClick={() => setActiveTab('galeria')} />
+          <NavItem label="Historias de impacto" icon={<Play className="w-4 h-4" />} active={activeTab === 'galeria'} onClick={() => setActiveTab('galeria')} />
           <div className="text-[10px] font-bold uppercase tracking-widest text-white/40 px-4 mt-6 mb-3">ONGs</div>
           <NavItem label="Actividades" icon={<Activity className="w-4 h-4" />} active={activeTab === 'actividades'} onClick={() => setActiveTab('actividades')} />
         </nav>
@@ -433,6 +463,318 @@ function AgendaTab() {
 }
 
 function RecursosTab() {
+  const [subTab, setSubTab] = useState<'artes' | 'ong'>('artes');
+
+  return (
+    <div>
+      <PageHeader
+        title="Gestión de Recursos y Artes"
+        subtitle="Administra los enlaces de descarga para las ONGs y los artes oficiales de la campaña."
+      />
+
+      {/* Subtab navigation */}
+      <div className="flex flex-wrap gap-2 p-1.5 bg-black/5 rounded-2xl w-fit mb-8 border border-border">
+        <button
+          type="button"
+          onClick={() => setSubTab('artes')}
+          className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold transition-all ${
+            subTab === 'artes'
+              ? 'bg-white text-[var(--navy)] shadow-sm'
+              : 'text-muted-foreground hover:text-foreground'
+          }`}
+        >
+          <Palette className="w-4 h-4 text-[var(--magenta)]" />
+          Artes de la Campaña (Kit de Difusión)
+        </button>
+        <button
+          type="button"
+          onClick={() => setSubTab('ong')}
+          className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold transition-all ${
+            subTab === 'ong'
+              ? 'bg-white text-[var(--navy)] shadow-sm'
+              : 'text-muted-foreground hover:text-foreground'
+          }`}
+        >
+          <DownloadCloud className="w-4 h-4 text-[var(--brand)]" />
+          Recursos para ONG
+        </button>
+      </div>
+
+      {subTab === 'artes' ? <ArtesCampanaSubTab /> : <RecursosOngSubTab />}
+    </div>
+  );
+}
+
+function ArtesCampanaSubTab() {
+  const campaignAssets = useCampaignAssets();
+  const currentKitUrl = useCampaignKitUrl();
+
+  const [kitUrlInput, setKitUrlInput] = useState(currentKitUrl);
+  const [savingKit, setSavingKit] = useState(false);
+  const [kitSaved, setKitSaved] = useState(false);
+
+  useEffect(() => {
+    setKitUrlInput(currentKitUrl);
+  }, [currentKitUrl]);
+
+  const handleSaveKitUrl = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!kitUrlInput.trim()) return;
+    setSavingKit(true);
+    try {
+      await store.updateCampaignKitUrl(kitUrlInput.trim());
+      setKitSaved(true);
+      setTimeout(() => setKitSaved(false), 3000);
+    } catch {
+      alert('Error al guardar el enlace del kit.');
+    } finally {
+      setSavingKit(false);
+    }
+  };
+
+  const { register, handleSubmit, reset, setValue } = useForm();
+  const [loading, setLoading] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+
+  const handleEdit = (asset: CampaignAsset) => {
+    setEditingId(asset.id);
+    setValue('title', asset.title);
+    setValue('tag', asset.tag || '');
+    setValue('description', asset.description || asset.desc || '');
+    setValue('link', asset.link || '');
+    setValue('color', asset.color || 'var(--brand)');
+    setValue('order', asset.order ?? 1);
+    window.scrollTo({ top: 300, behavior: 'smooth' });
+  };
+
+  const cancelEdit = () => {
+    setEditingId(null);
+    reset();
+  };
+
+  const onSubmit = async (data: any) => {
+    setLoading(true);
+    try {
+      const payload = {
+        title: data.title,
+        tag: data.tag,
+        description: data.description,
+        desc: data.description,
+        link: data.link?.trim() || '',
+        color: data.color,
+        order: Number(data.order) || 1,
+      };
+
+      if (editingId) {
+        await store.updateCampaignAsset(editingId, payload);
+      } else {
+        await store.addCampaignAsset(payload);
+      }
+      cancelEdit();
+    } catch {
+      alert('Error al guardar la tarjeta de artes.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="space-y-8">
+      {/* Main Kit Drive link card */}
+      <div className="bg-white rounded-3xl p-6 border border-border shadow-sm">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
+          <div>
+            <span className="text-[10px] font-black uppercase tracking-wider text-[var(--magenta)] bg-[var(--magenta)]/10 px-2.5 py-1 rounded-full">
+              Enlace Principal
+            </span>
+            <h3 className="text-xl font-bold text-foreground mt-2">
+              Botón "Descargar Kit Completo" (Google Drive)
+            </h3>
+            <p className="text-sm text-muted-foreground mt-0.5">
+              Este enlace se abre cuando las personas hacen clic en el botón principal del encabezado de la sección de artes.
+            </p>
+          </div>
+          {currentKitUrl && (
+            <a
+              href={currentKitUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold text-[var(--navy)] bg-secondary hover:bg-secondary/80 shrink-0 w-fit"
+            >
+              <ExternalLink className="w-3.5 h-3.5" /> Probar enlace actual
+            </a>
+          )}
+        </div>
+
+        <form onSubmit={handleSaveKitUrl} className="flex flex-col sm:flex-row gap-3">
+          <input
+            type="url"
+            value={kitUrlInput}
+            onChange={(e) => setKitUrlInput(e.target.value)}
+            placeholder="https://drive.google.com/..."
+            className="flex-1 rounded-xl border border-border bg-secondary/50 px-4 py-3 text-sm text-foreground outline-none focus:border-[var(--brand)] focus:bg-white transition-all"
+            required
+          />
+          <button
+            type="submit"
+            disabled={savingKit}
+            className="flex items-center justify-center gap-2 px-6 py-3 rounded-xl text-sm font-bold text-white transition-all disabled:opacity-50"
+            style={{ background: 'var(--brand)' }}
+          >
+            {savingKit ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : kitSaved ? (
+              <>
+                <Check className="w-4 h-4" /> ¡Guardado!
+              </>
+            ) : (
+              'Guardar Enlace'
+            )}
+          </button>
+        </form>
+      </div>
+
+      {/* Grid: Editor + Cards list */}
+      <div className="grid gap-8 lg:grid-cols-[380px_1fr]">
+        <FormCard
+          title={editingId ? 'Editar Tarjeta de Arte' : 'Nueva Tarjeta de Arte'}
+          onCancel={editingId ? cancelEdit : undefined}
+        >
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+            <FormInput label="Título de la tarjeta">
+              <input
+                {...register('title', { required: true })}
+                className={inputClass}
+                placeholder="Ej. Artes Listos para Publicar"
+              />
+            </FormInput>
+            <FormInput label="Etiqueta / Tag superior">
+              <input
+                {...register('tag', { required: true })}
+                className={inputClass}
+                placeholder="Ej. Listos para Publicar"
+              />
+            </FormInput>
+            <FormInput label="Descripción">
+              <textarea
+                {...register('description', { required: true })}
+                rows={3}
+                className={inputClass}
+                placeholder="Piezas gráficas terminadas en alta resolución..."
+              />
+            </FormInput>
+            <FormInput label="Enlace de descarga específico (Opcional)">
+              <input
+                {...register('link')}
+                className={inputClass}
+                placeholder="https://drive.google.com/... (o vacío para usar el Kit)"
+              />
+              <span className="text-[10px] text-white/40 block mt-1">
+                Si lo dejas vacío, usará el enlace del Kit Completo de arriba.
+              </span>
+            </FormInput>
+            <div className="grid grid-cols-2 gap-3">
+              <FormInput label="Color de Etiqueta">
+                <select {...register('color', { required: true })} className={inputClass}>
+                  <option value="var(--brand)">Azul Brand</option>
+                  <option value="var(--magenta)">Rosado Magenta</option>
+                  <option value="var(--navy)">Azul Oscuro (Navy)</option>
+                </select>
+              </FormInput>
+              <FormInput label="Orden">
+                <input
+                  type="number"
+                  {...register('order')}
+                  className={inputClass}
+                  placeholder="1"
+                />
+              </FormInput>
+            </div>
+            <SubmitBtn
+              loading={loading}
+              label={editingId ? 'Guardar Cambios' : 'Añadir Tarjeta'}
+            />
+          </form>
+        </FormCard>
+
+        <div>
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl font-bold" style={{ color: 'var(--navy)' }}>
+              Tarjetas en la sección de artes
+            </h2>
+            <span className="text-xs font-bold bg-[var(--navy)]/10 text-[var(--navy)] px-3 py-1 rounded-full">
+              {campaignAssets.length} tarjetas
+            </span>
+          </div>
+
+          {campaignAssets.length === 0 && (
+            <EmptyState label="No hay tarjetas de artes configuradas aún." />
+          )}
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {campaignAssets.map((asset) => (
+              <div
+                key={asset.id}
+                className="bg-white rounded-2xl border border-border shadow-sm hover:shadow-md transition-shadow overflow-hidden flex flex-col justify-between"
+              >
+                <div className="h-1.5 w-full" style={{ background: asset.color || 'var(--brand)' }} />
+                <div className="p-5 flex-1 flex flex-col justify-between">
+                  <div>
+                    <div className="flex items-center justify-between gap-2 mb-2">
+                      <span
+                        className="text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full text-white"
+                        style={{ background: asset.color || 'var(--brand)' }}
+                      >
+                        {asset.tag}
+                      </span>
+                      <span className="text-xs font-bold text-muted-foreground">
+                        Orden: #{asset.order ?? 1}
+                      </span>
+                    </div>
+                    <h3 className="font-bold text-foreground text-base mt-2">
+                      {asset.title}
+                    </h3>
+                    <p className="text-xs text-muted-foreground mt-1 line-clamp-3 leading-relaxed">
+                      {asset.description || asset.desc}
+                    </p>
+                  </div>
+
+                  <div className="mt-4 pt-3 border-t border-border">
+                    <div className="text-[11px] text-muted-foreground truncate mb-2">
+                      <span className="font-bold text-foreground">Enlace: </span>
+                      {asset.link ? (
+                        <a
+                          href={asset.link}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="hover:underline text-[var(--brand)] font-semibold"
+                        >
+                          {asset.link}
+                        </a>
+                      ) : (
+                        <span className="italic">Kit general de Google Drive</span>
+                      )}
+                    </div>
+                    <ActionBtns
+                      onEdit={() => handleEdit(asset)}
+                      onDelete={() => {
+                        if (confirm('¿Eliminar esta tarjeta de arte?')) {
+                          store.deleteCampaignAsset(asset.id);
+                        }
+                      }}
+                    />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function RecursosOngSubTab() {
   const resources = useResources();
   const { register, handleSubmit, reset, setValue } = useForm();
   const [loading, setLoading] = useState(false);
@@ -447,62 +789,65 @@ function RecursosTab() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const cancelEdit = () => { setEditingId(null); reset(); };
+  const cancelEdit = () => {
+    setEditingId(null);
+    reset();
+  };
 
   const onSubmit = async (data: any) => {
     setLoading(true);
     try {
       editingId ? await store.updateResource(editingId, data) : await store.addResource(data);
       cancelEdit();
-    } catch { alert('Hubo un error al guardar.'); }
-    finally { setLoading(false); }
+    } catch {
+      alert('Hubo un error al guardar.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <div>
-      <PageHeader title="Recursos Descargables" subtitle="Sube los materiales que las ONGs pueden descargar y usar." />
-      <div className="grid gap-8 lg:grid-cols-[360px_1fr]">
-        <FormCard title={editingId ? 'Editar Recurso' : 'Nuevo Recurso'} onCancel={editingId ? cancelEdit : undefined}>
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-            <FormInput label="Título">
-              <input {...register('title', { required: true })} className={inputClass} placeholder="Ej. Guía del Voluntario" />
-            </FormInput>
-            <FormInput label="Descripción">
-              <input {...register('desc', { required: true })} className={inputClass} placeholder="Descripción breve del recurso" />
-            </FormInput>
-            <FormInput label="Enlace de Descarga (URL)">
-              <input {...register('link', { required: true })} className={inputClass} placeholder="https://..." />
-            </FormInput>
-            <FormInput label="Color de Etiqueta">
-              <select {...register('color', { required: true })} className={inputClass}>
-                <option value="var(--brand)">Azul Brand</option>
-                <option value="var(--magenta)">Rosado Magenta</option>
-                <option value="var(--navy)">Azul Oscuro (Navy)</option>
-              </select>
-            </FormInput>
-            <SubmitBtn loading={loading} label={editingId ? 'Guardar Cambios' : 'Añadir Recurso'} />
-          </form>
-        </FormCard>
+    <div className="grid gap-8 lg:grid-cols-[360px_1fr]">
+      <FormCard title={editingId ? 'Editar Recurso' : 'Nuevo Recurso'} onCancel={editingId ? cancelEdit : undefined}>
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          <FormInput label="Título">
+            <input {...register('title', { required: true })} className={inputClass} placeholder="Ej. Guía del Voluntario" />
+          </FormInput>
+          <FormInput label="Descripción">
+            <input {...register('desc', { required: true })} className={inputClass} placeholder="Descripción breve del recurso" />
+          </FormInput>
+          <FormInput label="Enlace de Descarga (URL)">
+            <input {...register('link', { required: true })} className={inputClass} placeholder="https://..." />
+          </FormInput>
+          <FormInput label="Color de Etiqueta">
+            <select {...register('color', { required: true })} className={inputClass}>
+              <option value="var(--brand)">Azul Brand</option>
+              <option value="var(--magenta)">Rosado Magenta</option>
+              <option value="var(--navy)">Azul Oscuro (Navy)</option>
+            </select>
+          </FormInput>
+          <SubmitBtn loading={loading} label={editingId ? 'Guardar Cambios' : 'Añadir Recurso'} />
+        </form>
+      </FormCard>
 
-        <div>
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-bold" style={{ color: 'var(--navy)' }}>Recursos</h2>
-            <span className="text-xs font-bold bg-[var(--navy)]/10 text-[var(--navy)] px-3 py-1 rounded-full">{resources.length} documentos</span>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {resources.length === 0 && <div className="col-span-2"><EmptyState label="No hay recursos publicados aún." /></div>}
-            {resources.map(r => (
-              <div key={r.id} className="bg-white rounded-2xl border border-border shadow-sm hover:shadow-md transition-shadow overflow-hidden">
-                <div className="h-1.5 w-full" style={{ background: r.color }} />
-                <div className="p-5">
-                  <h3 className="font-bold text-foreground">{r.title}</h3>
-                  <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{r.desc}</p>
-                  <a href={r.link} target="_blank" rel="noreferrer" className="text-xs font-bold mt-3 block truncate hover:underline" style={{ color: r.color }}>{r.link}</a>
-                  <ActionBtns onEdit={() => handleEdit(r)} onDelete={() => { if (confirm('¿Eliminar este recurso?')) store.deleteResource(r.id); }} />
-                </div>
+      <div>
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-xl font-bold" style={{ color: 'var(--navy)' }}>Recursos para ONG</h2>
+          <span className="text-xs font-bold bg-[var(--navy)]/10 text-[var(--navy)] px-3 py-1 rounded-full">{resources.length} documentos</span>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {resources.length === 0 && <div className="col-span-2"><EmptyState label="No hay recursos publicados aún." /></div>}
+          {resources.map(r => (
+            <div key={r.id} className="bg-white rounded-2xl border border-border shadow-sm hover:shadow-md transition-shadow overflow-hidden">
+              <div className="h-1.5 w-full" style={{ background: r.color }} />
+              <div className="p-5">
+                <h3 className="font-bold text-foreground">{r.title}</h3>
+                <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{r.desc}</p>
+                <a href={r.link} target="_blank" rel="noreferrer" className="text-xs font-bold mt-3 block truncate hover:underline" style={{ color: r.color }}>{r.link}</a>
+                <ActionBtns onEdit={() => handleEdit(r)} onDelete={() => { if (confirm('¿Eliminar este recurso?')) store.deleteResource(r.id); }} />
               </div>
-            ))}
-          </div>
+            </div>
+          ))}
         </div>
       </div>
     </div>
@@ -553,79 +898,282 @@ function GaleriaTab() {
   const media = useImpactMedia();
   const { register, handleSubmit, reset, setValue } = useForm();
   const [loading, setLoading] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string>('');
 
   const handleEdit = (m: any) => {
     setEditingId(m.id);
     setValue('imageUrl', m.imageUrl);
     setValue('link', m.link);
     setValue('caption', m.caption || '');
-    setValue('order', m.order ?? 0);
+    setValue('order', m.order ?? 1);
+    setPreviewUrl(m.imageUrl);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const cancelEdit = () => { setEditingId(null); reset(); };
+  const cancelEdit = () => {
+    setEditingId(null);
+    setPreviewUrl('');
+    reset();
+  };
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    try {
+      const url = await uploadImageFile(file, 'impact-covers');
+      setValue('imageUrl', url);
+      setPreviewUrl(url);
+    } catch (err: any) {
+      alert('Error al subir la imagen: ' + (err?.message || 'Error desconocido'));
+    } finally {
+      setUploading(false);
+    }
+  };
 
   const onSubmit = async (data: any) => {
     setLoading(true);
     try {
-      const payload = { ...data, order: Number(data.order) || 0 };
+      const payload = {
+        imageUrl: data.imageUrl,
+        link: data.link,
+        caption: data.caption || '',
+        order: Number(data.order) || 1,
+      };
       editingId
         ? await store.updateImpactMedia(editingId, payload)
         : await store.addImpactMedia(payload);
       cancelEdit();
-    } catch { alert('Hubo un error al guardar.'); }
-    finally { setLoading(false); }
+    } catch {
+      alert('Hubo un error al guardar.');
+    } finally {
+      setLoading(false);
+    }
   };
+
+  // Build 6 slots mapping
+  const TOTAL_SLOTS = 6;
+  const sortedMedia = [...media].sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+  const slots: (typeof media[0] | null)[] = Array(TOTAL_SLOTS).fill(null);
+
+  // Fill by order (1-indexed) or sequential if missing
+  sortedMedia.forEach((m, idx) => {
+    const slotIndex = (m.order && m.order >= 1 && m.order <= TOTAL_SLOTS) ? m.order - 1 : idx;
+    if (slotIndex < TOTAL_SLOTS && !slots[slotIndex]) {
+      slots[slotIndex] = m;
+    } else {
+      const firstFree = slots.findIndex(s => s === null);
+      if (firstFree !== -1) slots[firstFree] = m;
+    }
+  });
 
   return (
     <div>
-      <PageHeader title="Galería de impacto" subtitle="Administra las imágenes/videos de historias de impacto (formato 9:16). Cada imagen puede enlazar a Instagram u otro URL." />
-      <div className="grid gap-8 lg:grid-cols-[360px_1fr]">
-        <FormCard title={editingId ? 'Editar imagen' : 'Nueva imagen'} onCancel={editingId ? cancelEdit : undefined}>
+      <PageHeader
+        title="Historias de Impacto del Voluntariado"
+        subtitle="Sube las portadas verticales (9:16) y agrega el enlace al video o material (YouTube, Instagram Reel, TikTok, Drive, etc.). Al hacer clic en la portada en la web, el usuario será redirigido al material."
+      />
+      <div className="grid gap-8 lg:grid-cols-[380px_1fr]">
+        <FormCard
+          title={editingId ? 'Editar Portada' : 'Subir Nueva Portada (9:16)'}
+          onCancel={editingId ? cancelEdit : undefined}
+        >
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-            <FormInput label="URL de la imagen (9:16)">
-              <input {...register('imageUrl', { required: true })} className={inputClass} placeholder="https://..." />
+            {/* File upload input */}
+            <FormInput label="Subir imagen de portada desde tu equipo">
+              <label className="flex flex-col items-center justify-center gap-2 p-4 rounded-xl border border-dashed border-white/25 bg-white/5 hover:bg-white/10 cursor-pointer transition-all text-center">
+                {uploading ? (
+                  <div className="flex items-center gap-2 text-xs text-white">
+                    <Loader2 className="w-4 h-4 animate-spin text-[var(--magenta)]" />
+                    <span>Optimizando y subiendo portada...</span>
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center gap-1.5 text-xs text-white/80">
+                    <Upload className="w-5 h-5 text-[var(--magenta)]" />
+                    <span className="font-bold">Seleccionar imagen</span>
+                    <span className="text-[10px] text-white/45">JPG, PNG o WEBP (se ajusta a 9:16)</span>
+                  </div>
+                )}
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFileUpload}
+                  disabled={uploading}
+                  className="hidden"
+                />
+              </label>
             </FormInput>
-            <FormInput label="Enlace al hacer clic (Instagram, Reel, etc.)">
-              <input {...register('link', { required: true })} className={inputClass} placeholder="https://www.instagram.com/p/..." />
+
+            {/* Direct URL input */}
+            <FormInput label="O URL directo de la imagen">
+              <input
+                {...register('imageUrl', { required: true })}
+                className={inputClass}
+                placeholder="https://..."
+                onChange={(e) => setPreviewUrl(e.target.value)}
+              />
             </FormInput>
-            <FormInput label="Texto / Pie de foto (opcional)">
-              <input {...register('caption')} className={inputClass} placeholder="Ej. Jornada de limpieza costera" />
+
+            {/* Live 9:16 preview */}
+            {previewUrl && (
+              <div>
+                <label className={labelClass}>Vista previa 9:16</label>
+                <div className="aspect-[9/16] w-28 mx-auto rounded-2xl overflow-hidden relative border border-white/20 shadow-lg bg-black">
+                  <img
+                    src={previewUrl}
+                    alt="Vista previa"
+                    className="w-full h-full object-cover"
+                    onError={() => {}}
+                  />
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/25">
+                    <div className="w-8 h-8 rounded-full bg-white/90 text-[var(--navy)] grid place-items-center">
+                      <Play className="w-4 h-4 fill-current ml-0.5" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Link to video/material */}
+            <FormInput label="Enlace al video o material (Reel, YouTube, etc.)">
+              <input
+                {...register('link', { required: true })}
+                className={inputClass}
+                placeholder="https://www.instagram.com/reel/... o https://youtube.com/..."
+              />
             </FormInput>
-            <FormInput label="Orden (número, menor = primero)">
-              <input type="number" {...register('order')} className={inputClass} placeholder="1" />
+
+            {/* Caption */}
+            <FormInput label="Título o pie de foto (opcional)">
+              <input
+                {...register('caption')}
+                className={inputClass}
+                placeholder="Ej. Arianna Vargas - Voluntaria en Santo Domingo"
+              />
             </FormInput>
-            <SubmitBtn loading={loading} label={editingId ? 'Guardar cambios' : 'Añadir imagen'} />
+
+            {/* Slot order */}
+            <FormInput label="Número de Slot / Posición (1 al 6)">
+              <input
+                type="number"
+                min={1}
+                max={6}
+                {...register('order')}
+                className={inputClass}
+                placeholder="1"
+              />
+            </FormInput>
+
+            <SubmitBtn
+              loading={loading || uploading}
+              label={editingId ? 'Guardar Cambios' : 'Añadir Portada'}
+            />
           </form>
         </FormCard>
 
         <div>
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-bold" style={{ color: 'var(--navy)' }}>Imágenes ({media.length}/6)</h2>
+            <div>
+              <h2 className="text-xl font-bold" style={{ color: 'var(--navy)' }}>
+                Portadas de Historias ({media.length}/6)
+              </h2>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Representa los 6 espacios visibles en la página principal.
+              </p>
+            </div>
           </div>
-          {media.length === 0 && <EmptyState label="No hay imágenes en la galería aún." />}
+
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-            {media.map((m) => (
-              <div key={m.id} className="relative rounded-2xl overflow-hidden border border-border bg-white shadow-sm group">
-                <div className="aspect-[9/16] w-full overflow-hidden bg-secondary">
-                  <img src={m.imageUrl} alt={m.caption || ''} className="h-full w-full object-cover" />
-                </div>
-                <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent p-3">
-                  {m.caption && <p className="text-xs font-bold text-white line-clamp-2">{m.caption}</p>}
-                  <a href={m.link} target="_blank" rel="noreferrer" className="text-[10px] text-white/60 hover:text-white truncate block mt-1">{m.link}</a>
-                  <div className="flex gap-3 mt-2">
-                    <button onClick={() => handleEdit(m)} className="text-[10px] font-bold text-white/80 flex items-center gap-1 hover:text-white">
-                      <Edit2 className="w-3 h-3" /> Editar
-                    </button>
-                    <button onClick={() => { if (confirm('¿Eliminar esta imagen?')) store.deleteImpactMedia(m.id); }} className="text-[10px] font-bold text-red-300 flex items-center gap-1 hover:text-red-200">
-                      <Trash2 className="w-3 h-3" /> Eliminar
-                    </button>
+            {slots.map((item, index) => {
+              const slotNum = index + 1;
+              if (item) {
+                return (
+                  <div
+                    key={item.id}
+                    className="relative rounded-2xl overflow-hidden border border-border bg-white shadow-sm flex flex-col group hover:shadow-md transition-shadow"
+                  >
+                    <div className="aspect-[9/16] w-full overflow-hidden relative bg-black">
+                      <img
+                        src={item.imageUrl}
+                        alt={item.caption || ''}
+                        className="h-full w-full object-cover"
+                      />
+                      <div className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/35 transition-colors">
+                        <div className="w-10 h-10 rounded-full bg-white/90 text-[var(--navy)] grid place-items-center shadow-lg group-hover:scale-110 transition-transform">
+                          <Play className="w-4 h-4 fill-current ml-0.5" />
+                        </div>
+                      </div>
+                      <div className="absolute top-2 right-2 bg-black/70 backdrop-blur-sm text-white text-[10px] font-black px-2.5 py-0.5 rounded-full">
+                        Slot #{item.order || slotNum}
+                      </div>
+                      {item.caption && (
+                        <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 via-black/40 to-transparent p-3">
+                          <p className="text-xs font-bold text-white line-clamp-2 leading-tight">
+                            {item.caption}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                    <div className="p-3 bg-white border-t border-border flex flex-col gap-2">
+                      <a
+                        href={item.link}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-xs font-bold text-[var(--brand)] hover:underline truncate flex items-center gap-1"
+                      >
+                        <ExternalLink className="w-3.5 h-3.5 shrink-0" />
+                        <span className="truncate">{item.link}</span>
+                      </a>
+                      <div className="flex items-center justify-between pt-1 border-t border-border/60">
+                        <button
+                          type="button"
+                          onClick={() => handleEdit(item)}
+                          className="text-xs font-bold text-[var(--navy)] hover:text-[var(--brand)] flex items-center gap-1"
+                        >
+                          <Edit2 className="w-3 h-3" /> Editar
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (confirm('¿Eliminar esta portada?')) {
+                              store.deleteImpactMedia(item.id);
+                            }
+                          }}
+                          className="text-xs font-bold text-destructive hover:underline flex items-center gap-1"
+                        >
+                          <Trash2 className="w-3 h-3" /> Eliminar
+                        </button>
+                      </div>
+                    </div>
                   </div>
+                );
+              }
+
+              return (
+                <div
+                  key={`empty-${slotNum}`}
+                  className="aspect-[9/16] rounded-2xl border-2 border-dashed border-border bg-white/50 flex flex-col items-center justify-center p-4 text-center hover:border-[var(--brand)] hover:bg-white transition-all cursor-pointer group"
+                  onClick={() => {
+                    setValue('order', slotNum);
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                  }}
+                >
+                  <div className="w-10 h-10 rounded-full bg-secondary grid place-items-center text-muted-foreground mb-2 group-hover:bg-[var(--brand)]/10 group-hover:text-[var(--brand)] transition-colors">
+                    <Upload className="w-4 h-4" />
+                  </div>
+                  <div className="text-xs font-bold text-foreground">Slot #{slotNum}</div>
+                  <div className="text-[11px] text-muted-foreground mt-0.5">Espacio vacío</div>
+                  <button
+                    type="button"
+                    className="mt-3 text-[11px] font-bold text-[var(--brand)] group-hover:underline"
+                  >
+                    + Asignar portada
+                  </button>
                 </div>
-                <div className="absolute top-2 right-2 bg-black/60 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">#{m.order ?? 0}</div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </div>
