@@ -303,6 +303,68 @@ function LeyVoluntariado() {
 /*  Impact Gallery                                                 */
 /* -------------------------------------------------------------- */
 
+function ImpactStoryCard({ m, index }: { m: any; index: number }) {
+  const [imgError, setImgError] = useState(false);
+  const rawLink = m?.link?.trim();
+  const targetLink = rawLink
+    ? (rawLink.startsWith("http://") || rawLink.startsWith("https://") ? rawLink : `https://${rawLink}`)
+    : undefined;
+
+  return (
+    <a
+      href={targetLink}
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label={m.caption || `Historia de impacto ${index + 1}`}
+      className="group relative block h-full w-full overflow-hidden rounded-2xl bg-gradient-to-br from-[var(--navy)] via-[#0a2a5e] to-[var(--brand)]"
+    >
+      {!imgError && m.imageUrl ? (
+        <img
+          src={m.imageUrl}
+          alt={m.caption || `Historia de impacto ${index + 1}`}
+          onError={() => setImgError(true)}
+          className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+        />
+      ) : (
+        <div className="flex h-full w-full flex-col justify-between p-3.5 text-white">
+          <div className="flex items-center justify-between">
+            <span className="text-[10px] font-black uppercase tracking-wider bg-white/20 px-2 py-0.5 rounded-full backdrop-blur-sm">
+              Historia #{m.order || index + 1}
+            </span>
+          </div>
+          <div className="my-auto flex flex-col items-center justify-center text-center">
+            <div className="grid h-11 w-11 place-items-center rounded-full bg-white/95 text-[var(--magenta)] shadow-lg transition-transform group-hover:scale-110">
+              <Play className="h-5 w-5 fill-current ml-0.5" />
+            </div>
+            <span className="mt-2 text-[10px] font-bold text-white/90">Ver historia</span>
+          </div>
+          {m.caption && (
+            <p className="text-xs font-bold text-white line-clamp-2 leading-tight">
+              {m.caption}
+            </p>
+          )}
+        </div>
+      )}
+
+      {!imgError && m.imageUrl && (
+        <>
+          <div className="absolute inset-0 flex items-center justify-center bg-black/25 transition-colors group-hover:bg-black/45">
+            <div className="grid h-12 w-12 place-items-center rounded-full bg-white/90 text-[var(--navy)] shadow-lg backdrop-blur-sm transition-transform duration-300 group-hover:scale-110 group-hover:bg-white group-hover:text-[var(--magenta)]">
+              <Play className="h-5 w-5 fill-current ml-0.5" />
+            </div>
+          </div>
+          {m.caption && (
+            <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 via-black/40 to-transparent px-3 pb-3 pt-8">
+              <p className="text-xs font-bold text-white line-clamp-2 leading-tight">{m.caption}</p>
+            </div>
+          )}
+        </>
+      )}
+      <div className="absolute inset-0 ring-2 ring-inset ring-[var(--magenta)] opacity-0 rounded-2xl transition-opacity group-hover:opacity-100" />
+    </a>
+  );
+}
+
 function ImpactGallery() {
   const media = useImpactMedia();
 
@@ -322,37 +384,8 @@ function ImpactGallery() {
   return (
     <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-6">
       {slots.map((m, i) => {
-        const rawLink = m?.link?.trim();
-        const targetLink = rawLink
-          ? (rawLink.startsWith("http://") || rawLink.startsWith("https://") ? rawLink : `https://${rawLink}`)
-          : undefined;
-
         const inner = m ? (
-          <a
-            href={targetLink}
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label={m.caption || `Historia de impacto ${i + 1}`}
-            className="group relative block h-full w-full overflow-hidden rounded-2xl bg-black"
-          >
-            <img
-              src={m.imageUrl}
-              alt={m.caption || `Historia de impacto ${i + 1}`}
-              className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-            />
-            {/* Play badge overlay indicating it opens video/material */}
-            <div className="absolute inset-0 flex items-center justify-center bg-black/25 transition-colors group-hover:bg-black/45">
-              <div className="grid h-12 w-12 place-items-center rounded-full bg-white/90 text-[var(--navy)] shadow-lg backdrop-blur-sm transition-transform duration-300 group-hover:scale-110 group-hover:bg-white group-hover:text-[var(--magenta)]">
-                <Play className="h-5 w-5 fill-current ml-0.5" />
-              </div>
-            </div>
-            {m.caption && (
-              <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 via-black/40 to-transparent px-3 pb-3 pt-8">
-                <p className="text-xs font-bold text-white line-clamp-2 leading-tight">{m.caption}</p>
-              </div>
-            )}
-            <div className="absolute inset-0 ring-2 ring-inset ring-[var(--magenta)] opacity-0 rounded-2xl transition-opacity group-hover:opacity-100" />
-          </a>
+          <ImpactStoryCard m={m} index={i} />
         ) : (
           <div className="flex h-full w-full flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-border bg-secondary text-center">
             <div

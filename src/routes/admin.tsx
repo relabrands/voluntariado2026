@@ -894,6 +894,113 @@ function EmptyState({ label }: { label: string }) {
   );
 }
 
+function AdminImpactSlotCard({
+  item,
+  slotNum,
+  onEdit,
+  onDelete,
+}: {
+  item: any;
+  slotNum: number;
+  onEdit: () => void;
+  onDelete: () => void;
+}) {
+  const [imgError, setImgError] = useState(false);
+
+  // Reset imgError if imageUrl changes
+  useEffect(() => {
+    setImgError(false);
+  }, [item.imageUrl]);
+
+  return (
+    <div className="relative rounded-2xl overflow-hidden border border-border bg-white shadow-sm flex flex-col group hover:shadow-md transition-shadow">
+      <div className="aspect-[9/16] w-full overflow-hidden relative bg-black">
+        {!imgError && item.imageUrl ? (
+          <img
+            src={item.imageUrl}
+            alt={item.caption || ''}
+            onError={() => setImgError(true)}
+            className="h-full w-full object-cover"
+          />
+        ) : (
+          <div className="flex h-full w-full flex-col justify-between p-4 bg-gradient-to-br from-[var(--navy)] via-[#0a2a5e] to-[var(--brand)] text-white text-center">
+            <span className="text-[10px] font-black uppercase tracking-wider bg-white/20 px-2 py-0.5 rounded-full w-fit mx-auto">
+              Slot #{item.order || slotNum}
+            </span>
+            <div className="my-auto flex flex-col items-center">
+              <div className="w-10 h-10 rounded-full bg-white/90 text-[var(--magenta)] grid place-items-center mb-2 shadow">
+                <Play className="w-4 h-4 fill-current ml-0.5" />
+              </div>
+              <span className="text-[10px] font-bold text-amber-300">
+                ⚠️ Imagen no disponible (URL rota)
+              </span>
+              <button
+                type="button"
+                onClick={onEdit}
+                className="mt-2 text-[11px] font-bold underline text-white hover:text-amber-200"
+              >
+                Subir foto nueva
+              </button>
+            </div>
+            {item.caption && (
+              <p className="text-[11px] font-bold text-white line-clamp-2 leading-tight">
+                {item.caption}
+              </p>
+            )}
+          </div>
+        )}
+
+        {!imgError && item.imageUrl && (
+          <>
+            <div className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/35 transition-colors">
+              <div className="w-10 h-10 rounded-full bg-white/90 text-[var(--navy)] grid place-items-center shadow-lg group-hover:scale-110 transition-transform">
+                <Play className="w-4 h-4 fill-current ml-0.5" />
+              </div>
+            </div>
+            <div className="absolute top-2 right-2 bg-black/70 backdrop-blur-sm text-white text-[10px] font-black px-2.5 py-0.5 rounded-full">
+              Slot #{item.order || slotNum}
+            </div>
+            {item.caption && (
+              <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 via-black/40 to-transparent p-3">
+                <p className="text-xs font-bold text-white line-clamp-2 leading-tight">
+                  {item.caption}
+                </p>
+              </div>
+            )}
+          </>
+        )}
+      </div>
+      <div className="p-3 bg-white border-t border-border flex flex-col gap-2">
+        <a
+          href={item.link}
+          target="_blank"
+          rel="noreferrer"
+          className="text-xs font-bold text-[var(--brand)] hover:underline truncate flex items-center gap-1"
+        >
+          <ExternalLink className="w-3.5 h-3.5 shrink-0" />
+          <span className="truncate">{item.link}</span>
+        </a>
+        <div className="flex items-center justify-between pt-1 border-t border-border/60">
+          <button
+            type="button"
+            onClick={onEdit}
+            className="text-xs font-bold text-[var(--navy)] hover:text-[var(--brand)] flex items-center gap-1"
+          >
+            <Edit2 className="w-3 h-3" /> Editar
+          </button>
+          <button
+            type="button"
+            onClick={onDelete}
+            className="text-xs font-bold text-destructive hover:underline flex items-center gap-1"
+          >
+            <Trash2 className="w-3 h-3" /> Eliminar
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function GaleriaTab() {
   const media = useImpactMedia();
   const { register, handleSubmit, reset, setValue } = useForm();
@@ -901,6 +1008,7 @@ function GaleriaTab() {
   const [uploading, setUploading] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string>('');
+  const [previewError, setPreviewError] = useState(false);
 
   const handleEdit = (m: any) => {
     setEditingId(m.id);
@@ -909,12 +1017,14 @@ function GaleriaTab() {
     setValue('caption', m.caption || '');
     setValue('order', m.order ?? 1);
     setPreviewUrl(m.imageUrl);
+    setPreviewError(false);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const cancelEdit = () => {
     setEditingId(null);
     setPreviewUrl('');
+    setPreviewError(false);
     reset();
   };
 
@@ -924,12 +1034,14 @@ function GaleriaTab() {
     setUploading(true);
     try {
       const url = await uploadImageFile(file, 'impact-covers');
-      setValue('imageUrl', url);
+      setValue('imageUrl', url, { shouldValidate: true, shouldDirty: true });
       setPreviewUrl(url);
+      setPreviewError(false);
     } catch (err: any) {
-      alert('Error al subir la imagen: ' + (err?.message || 'Error desconocido'));
+      alert('Error al procesar la imagen: ' + (err?.message || 'Error desconocido'));
     } finally {
       setUploading(false);
+      e.target.value = '';
     }
   };
 
@@ -987,13 +1099,13 @@ function GaleriaTab() {
                 {uploading ? (
                   <div className="flex items-center gap-2 text-xs text-white">
                     <Loader2 className="w-4 h-4 animate-spin text-[var(--magenta)]" />
-                    <span>Optimizando y subiendo portada...</span>
+                    <span>Ajustando a 9:16...</span>
                   </div>
                 ) : (
                   <div className="flex flex-col items-center gap-1.5 text-xs text-white/80">
                     <Upload className="w-5 h-5 text-[var(--magenta)]" />
                     <span className="font-bold">Seleccionar imagen</span>
-                    <span className="text-[10px] text-white/45">JPG, PNG o WEBP (se ajusta a 9:16)</span>
+                    <span className="text-[10px] text-white/45">JPG, PNG o WEBP (se ajusta a 9:16 automáticamente)</span>
                   </div>
                 )}
                 <input
@@ -1009,29 +1121,50 @@ function GaleriaTab() {
             {/* Direct URL input */}
             <FormInput label="O URL directo de la imagen">
               <input
-                {...register('imageUrl', { required: true })}
+                {...register('imageUrl', {
+                  required: true,
+                  onChange: (e) => {
+                    setPreviewUrl(e.target.value);
+                    setPreviewError(false);
+                  },
+                })}
                 className={inputClass}
-                placeholder="https://..."
-                onChange={(e) => setPreviewUrl(e.target.value)}
+                placeholder="https://... o sube una imagen arriba"
               />
             </FormInput>
 
             {/* Live 9:16 preview */}
             {previewUrl && (
               <div>
-                <label className={labelClass}>Vista previa 9:16</label>
+                <div className="flex items-center justify-between mb-1">
+                  <label className={labelClass}>Vista previa 9:16</label>
+                  {previewUrl.startsWith('data:') && (
+                    <span className="text-[10px] font-bold text-emerald-400">
+                      ✓ Foto lista para guardar
+                    </span>
+                  )}
+                </div>
                 <div className="aspect-[9/16] w-28 mx-auto rounded-2xl overflow-hidden relative border border-white/20 shadow-lg bg-black">
-                  <img
-                    src={previewUrl}
-                    alt="Vista previa"
-                    className="w-full h-full object-cover"
-                    onError={() => {}}
-                  />
-                  <div className="absolute inset-0 flex items-center justify-center bg-black/25">
-                    <div className="w-8 h-8 rounded-full bg-white/90 text-[var(--navy)] grid place-items-center">
-                      <Play className="w-4 h-4 fill-current ml-0.5" />
+                  {!previewError ? (
+                    <img
+                      src={previewUrl}
+                      alt="Vista previa"
+                      className="w-full h-full object-cover"
+                      onError={() => setPreviewError(true)}
+                    />
+                  ) : (
+                    <div className="flex h-full w-full flex-col items-center justify-center p-2 text-center bg-red-950/40 text-red-200">
+                      <span className="text-xl mb-1">⚠️</span>
+                      <span className="text-[10px] font-bold">Enlace roto o inválido</span>
                     </div>
-                  </div>
+                  )}
+                  {!previewError && (
+                    <div className="absolute inset-0 flex items-center justify-center bg-black/25">
+                      <div className="w-8 h-8 rounded-full bg-white/90 text-[var(--navy)] grid place-items-center">
+                        <Play className="w-4 h-4 fill-current ml-0.5" />
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             )}
@@ -1090,64 +1223,17 @@ function GaleriaTab() {
               const slotNum = index + 1;
               if (item) {
                 return (
-                  <div
+                  <AdminImpactSlotCard
                     key={item.id}
-                    className="relative rounded-2xl overflow-hidden border border-border bg-white shadow-sm flex flex-col group hover:shadow-md transition-shadow"
-                  >
-                    <div className="aspect-[9/16] w-full overflow-hidden relative bg-black">
-                      <img
-                        src={item.imageUrl}
-                        alt={item.caption || ''}
-                        className="h-full w-full object-cover"
-                      />
-                      <div className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/35 transition-colors">
-                        <div className="w-10 h-10 rounded-full bg-white/90 text-[var(--navy)] grid place-items-center shadow-lg group-hover:scale-110 transition-transform">
-                          <Play className="w-4 h-4 fill-current ml-0.5" />
-                        </div>
-                      </div>
-                      <div className="absolute top-2 right-2 bg-black/70 backdrop-blur-sm text-white text-[10px] font-black px-2.5 py-0.5 rounded-full">
-                        Slot #{item.order || slotNum}
-                      </div>
-                      {item.caption && (
-                        <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 via-black/40 to-transparent p-3">
-                          <p className="text-xs font-bold text-white line-clamp-2 leading-tight">
-                            {item.caption}
-                          </p>
-                        </div>
-                      )}
-                    </div>
-                    <div className="p-3 bg-white border-t border-border flex flex-col gap-2">
-                      <a
-                        href={item.link}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="text-xs font-bold text-[var(--brand)] hover:underline truncate flex items-center gap-1"
-                      >
-                        <ExternalLink className="w-3.5 h-3.5 shrink-0" />
-                        <span className="truncate">{item.link}</span>
-                      </a>
-                      <div className="flex items-center justify-between pt-1 border-t border-border/60">
-                        <button
-                          type="button"
-                          onClick={() => handleEdit(item)}
-                          className="text-xs font-bold text-[var(--navy)] hover:text-[var(--brand)] flex items-center gap-1"
-                        >
-                          <Edit2 className="w-3 h-3" /> Editar
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            if (confirm('¿Eliminar esta portada?')) {
-                              store.deleteImpactMedia(item.id);
-                            }
-                          }}
-                          className="text-xs font-bold text-destructive hover:underline flex items-center gap-1"
-                        >
-                          <Trash2 className="w-3 h-3" /> Eliminar
-                        </button>
-                      </div>
-                    </div>
-                  </div>
+                    item={item}
+                    slotNum={slotNum}
+                    onEdit={() => handleEdit(item)}
+                    onDelete={() => {
+                      if (confirm('¿Eliminar esta portada?')) {
+                        store.deleteImpactMedia(item.id);
+                      }
+                    }}
+                  />
                 );
               }
 
