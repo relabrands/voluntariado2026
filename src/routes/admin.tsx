@@ -1065,8 +1065,8 @@ function GaleriaTab() {
     }
   };
 
-  // Build 6 slots mapping
-  const TOTAL_SLOTS = 6;
+  // Build 10 slots mapping (5 arriba y 5 abajo en desktop)
+  const TOTAL_SLOTS = 10;
   const sortedMedia = [...media].sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
   const slots: (typeof media[0] | null)[] = Array(TOTAL_SLOTS).fill(null);
 
@@ -1188,11 +1188,11 @@ function GaleriaTab() {
             </FormInput>
 
             {/* Slot order */}
-            <FormInput label="Número de Slot / Posición (1 al 6)">
+            <FormInput label="Número de Slot / Posición (1 al 10)">
               <input
                 type="number"
                 min={1}
-                max={6}
+                max={10}
                 {...register('order')}
                 className={inputClass}
                 placeholder="1"
@@ -1210,15 +1210,15 @@ function GaleriaTab() {
           <div className="flex items-center justify-between mb-6">
             <div>
               <h2 className="text-xl font-bold" style={{ color: 'var(--navy)' }}>
-                Portadas de Historias ({media.length}/6)
+                Portadas de Historias ({media.length}/10)
               </h2>
               <p className="text-xs text-muted-foreground mt-0.5">
-                Representa los 6 espacios visibles en la página principal.
+                Representa los 10 espacios visibles en la página principal (5 arriba y 5 abajo en desktop).
               </p>
             </div>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3.5">
             {slots.map((item, index) => {
               const slotNum = index + 1;
               if (item) {
@@ -1240,22 +1240,22 @@ function GaleriaTab() {
               return (
                 <div
                   key={`empty-${slotNum}`}
-                  className="aspect-[9/16] rounded-2xl border-2 border-dashed border-border bg-white/50 flex flex-col items-center justify-center p-4 text-center hover:border-[var(--brand)] hover:bg-white transition-all cursor-pointer group"
+                  className="aspect-[9/16] rounded-2xl border-2 border-dashed border-border bg-white/50 flex flex-col items-center justify-center p-3 text-center hover:border-[var(--brand)] hover:bg-white transition-all cursor-pointer group"
                   onClick={() => {
                     setValue('order', slotNum);
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                   }}
                 >
-                  <div className="w-10 h-10 rounded-full bg-secondary grid place-items-center text-muted-foreground mb-2 group-hover:bg-[var(--brand)]/10 group-hover:text-[var(--brand)] transition-colors">
+                  <div className="w-9 h-9 rounded-full bg-secondary grid place-items-center text-muted-foreground mb-1.5 group-hover:bg-[var(--brand)]/10 group-hover:text-[var(--brand)] transition-colors">
                     <Upload className="w-4 h-4" />
                   </div>
                   <div className="text-xs font-bold text-foreground">Slot #{slotNum}</div>
-                  <div className="text-[11px] text-muted-foreground mt-0.5">Espacio vacío</div>
+                  <div className="text-[10px] text-muted-foreground mt-0.5">Espacio vacío</div>
                   <button
                     type="button"
-                    className="mt-3 text-[11px] font-bold text-[var(--brand)] group-hover:underline"
+                    className="mt-2 text-[10px] font-bold text-[var(--brand)] group-hover:underline"
                   >
-                    + Asignar portada
+                    + Asignar
                   </button>
                 </div>
               );

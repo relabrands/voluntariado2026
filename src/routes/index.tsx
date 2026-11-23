@@ -374,15 +374,16 @@ function ImpactGallery() {
     </svg>
   );
 
-  // Show up to 6 slots; fill remaining with placeholders
-  const TOTAL = 6;
+  // Show up to 10 slots (5 arriba y 5 abajo en desktop); fill remaining with placeholders
+  const TOTAL = 10;
+  const sortedMedia = [...media].sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
   const slots = [
-    ...media.slice(0, TOTAL),
-    ...Array(Math.max(0, TOTAL - media.length)).fill(null),
+    ...sortedMedia.slice(0, TOTAL),
+    ...Array(Math.max(0, TOTAL - sortedMedia.length)).fill(null),
   ];
 
   return (
-    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-6">
+    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-5">
       {slots.map((m, i) => {
         const inner = m ? (
           <ImpactStoryCard m={m} index={i} />
